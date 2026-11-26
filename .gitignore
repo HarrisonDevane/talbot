@@ -1,0 +1,74 @@
+# Virtual environment folders
+.venv/
+env/
+venv/
+
+# Binaries
+data/
+!data/README.md
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / build files
+build/
+dist/
+site/
+*.egg-info/
+.eggs/
+
+# Logs and databases
+*.sqlite3
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# IDE/editor folders and files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+dependencies/
+logs/
+scripts/
+
+# macOS files
+.DS_Store
+
+# Windows thumbnail cache
+Thumbs.db
+
+C compiled code
+Thumbs.db
+build/*
+*.c
+*.pyd
+*.log
+*.pth
+*.lmdb
+*.bat
+*.engine
+*.onnx
+train_dir/*
+backup/*
+python/plot_training.py
+env/dev.env

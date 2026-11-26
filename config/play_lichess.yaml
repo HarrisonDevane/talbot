@@ -1,0 +1,71 @@
+# Config for main_lichess.py
+
+lichess:
+  token: null                          # null -> read LICHESS_API_TOKEN env var (recommended). Needs bot:play scope.
+  base_url: https://lichess.org
+
+engine:
+  path: '/app/build/talbot_uci'        # UCI exe. play_uci.yaml, model.yaml and model.engine must sit next to it.
+  startup_timeout_sec: 120             # Time allowed for uciok/readyok (TensorRT deserialisation happens here)
+  move_overhead_ms: 300                # Sent as `setoption MoveOverhead` (engine clamps 0-5000). Covers network lag.
+  syzygy_path: '/app/data/tablebases/3-4-5'   # Sent as `setoption SyzygyPath`. Empty = tablebases off.
+  extra_args: []                       # Any extra CLI args for the exe
+  slot_cores: []                       # Optional CPU pinning per concurrent game slot, e.g.
+                                       #   - {worker: "0,1", batcher: "2"}
+                                       #   - {worker: "3,4", batcher: "5"}
+
+games:
+  max_concurrent: 2                    # Each game = its own engine process + its own copy of the model on the GPU
+  total_games: null                    # Stop accepting/challenging after this many games this session (null = unlimited)
+  exit_when_done: true                 # Exit once total_games are all finished
+  resign_on_shutdown: true             # Resign active games on Ctrl+C / SIGTERM
+  greeting: null                       # Sent to player chat at game start. null = off.
+
+opening:                               # Fast fixed-time moves early in the game
+  fast_plies: 8                        # Game plies (both sides) on a short fixed think; 0 = off
+  increment_fraction: 0.6              # Think time = this x our increment...
+  policy_temp: 4.0                     # Prior softmax temp during the opening (play_uci.yaml uses 1.4). null = off
+  min_ms: 300                          # ...but at least this
+  max_ms: 2000                         # ...and at most this
+
+challenge_accept:                      # Incoming challenges
+  enabled: true
+  variants: [standard, fromPosition]   # Talbot has no 960/variant support
+  min_base_sec: 60
+  max_base_sec: 1800
+  min_increment_sec: 1
+  max_increment_sec: 30
+  accept_rated: true
+  accept_casual: true
+  accept_bots: false
+  accept_humans: true
+  min_rating: null                     # Challenger rating filter (null = no limit)
+  max_rating: null
+  allowlist: []                        # Non-empty = ONLY these usernames
+  blocklist: []
+
+matchmaking:                           # Outgoing challenges to other bots
+  enabled: true
+  interval_sec: 30                     # How often to consider sending a challenge
+  challenge_timeout_sec: 60            # Cancel an unanswered challenge after this long
+  decline_cooldown_min: 60             # Don't re-challenge a bot that declined/ignored/failed for this long
+  reserve_slots_for_incoming: 0        # Keep this many slots free for incoming challenges (must be < max_concurrent or the bot never challenges)
+  rated: true
+  variant: standard
+  time_controls:                       # [base_seconds, increment_seconds]; one picked at random.
+    - [120, 1]
+    - [300, 3]
+    - [600, 5]
+    - [1800, 20]
+  opponent_source: online              # online = live /api/bot/online list filtered by rating; list = use `opponents`
+  online_pool_size: 200
+  min_rating: 2400                     # Applied to the opponent's rating in the perf of the chosen TC (online mode)
+  max_rating: null
+  opponents: []                        # Used only when opponent_source: list
+  blocklist: []
+
+logging:
+  dir: '/app/logs/lichess'
+  level: INFO
+  engine_logging: true                # true = uci_main.log, inference_batcher.log, game.pgn in the run folder
+  console: false

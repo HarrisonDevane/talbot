@@ -1,0 +1,28 @@
+site_name: Talbot
+site_url: https://harrisondevane.github.io/talbot/
+repo_url: https://github.com/HarrisonDevane/talbot
+theme:
+  name: material
+  features: [navigation.sections, content.code.copy, toc.follow]
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: {icon: material/brightness-4, name: Light mode}
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: {icon: material/brightness-7, name: Dark mode}
+nav:
+  - Home: index.md
+  - Write-up (v1.0): writeup-v1.md
+markdown_extensions:
+  - tables
+  - attr_list
+  - md_in_html
+  - toc: {permalink: true}
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js

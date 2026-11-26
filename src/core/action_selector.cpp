@@ -1,0 +1,366 @@
+#include "action_selector.hpp"
+#include <yaml-cpp/yaml.h>
+#include <iostream>
+#include <stdexcept>
+#include <cmath>
+#include <numeric>
+#include <algorithm>
+#include <chrono>
+
+ActionSelector::ActionSelector(
+    std::string name, int worker_id, ActionSelectorConfig config, Logger& logger
+) : name(name), worker_id(worker_id), config(config), logger(logger) {
+    std::random_device rd;
+    auto time_seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    rng.seed(rd() ^ worker_id ^ time_seed);
+    reset_for_new_game();
+}
+
+void ActionSelector::reset_for_new_game() {
+    std::uniform_real_distribution<double> dist(0.0, 1.0);
+    use_resignation = dist(rng) < config.resignation_probability;
+    logger.log("DEBUG", "Agent state reset. Resignation allowed: " + std::string(use_resignation ? "True" : "False"));
+}
+
+SelectionResult ActionSelector::select_move(MCTSNode* root, int ply_count, MCTSEngine* engine) {
+    SelectionResult result;
+
+    int num_children = root->num_children;
+    if (num_children == 0) return result;
+
+    std::vector<MCTSEdge*> all_edges;
+    all_edges.reserve(num_children);
+    for(int i = 0; i < num_children; ++i) {
+        all_edges.push_back(root->first_edge + i);
+    }
+
+    std::vector<MCTSEdge*> winning_edges, losing_edges, draw_edges, mhd_edges, non_forced_visited;
+    for (MCTSEdge* edge : all_edges) {
+        MCTSNode* child = edge->child;
+
+        if (child == nullptr) continue;
+
+        if (child->has_forced_outcome()) {
+            if      (child->forced_outcome == -1) winning_edges.push_back(edge);
+            else if (child->forced_outcome ==  1) losing_edges.push_back(edge);
+            else                                  draw_edges.push_back(edge);
+        } else if (child->mover_has_draw()) {
+            // Not proven, but PV / no-escape says this child's mover heads to
+            // a draw. Treat as draw-like for selection (Rule C), independent
+            // of visit count. Excluded from non_forced_visited so temperature
+            // sampling can't pick it.
+            mhd_edges.push_back(edge);
+        } else if (child->visits > 0) {
+            non_forced_visited.push_back(edge);
+        }
+    }
+
+    // Log any child carrying mover_has_draw for post-mortem verification.
+    // Distinguishes proven-draw (fo=0) sources from PV/no-escape sources.
+    if (logger.get_level() <= 20) {
+        for (MCTSEdge* edge : all_edges) {
+            MCTSNode* c = edge->child;
+            if (c != nullptr && c->mover_has_draw()) {
+                const char* origin =
+                    c->has_forced_outcome() && c->forced_outcome == 0 ? "proven-draw"
+                  : c->has_forced_outcome()                            ? "forced-non-draw(!)"
+                  :                                                      "PV/no-escape";
+                char line[256];
+                snprintf(line, sizeof(line),
+                    "mover_has_draw set on %s (%s, visits=%d, cached_q=%.4f)",
+                    chess::uci::moveToUci(edge->move).c_str(),
+                    origin, c->visits, static_cast<double>(c->cached_q));
+                logger.log("INFO", line);
+            }
+        }
+    }
+
+    MCTSEdge* top_edge = nullptr;
+    double best_q = -2.0;
+
+    auto gscore = [&](MCTSEdge* e, double sigma, double vm) -> double {
+        int idx = static_cast<int>(e - root->first_edge);
+        double noise = (idx >= 0 && idx < (int)engine->root_gumbel_noise.size())
+                     ? engine->root_gumbel_noise[idx] : 0.0;
+        return e->calculate_gumbel_score(config.contempt, sigma, vm, noise);
+    };
+
+    auto pick_top = [&]() -> MCTSEdge* {
+        if (!engine->root_used_halving) {
+            // Deficit root: visits track the improved policy -> argmax visits, Q breaks ties.
+            return *std::max_element(non_forced_visited.begin(), non_forced_visited.end(),
+                [&](MCTSEdge* a, MCTSEdge* b) {
+                    if (a->child->visits != b->child->visits) return a->child->visits < b->child->visits;
+                    return -a->child->expected_value(config.contempt) < -b->child->expected_value(config.contempt);
+                });
+        }
+        // Sequential halving: top-2 by visits, best gumbel score.
+        double mv = 0.0;
+        for (MCTSEdge* e : non_forced_visited) if (e->child->visits > mv) mv = e->child->visits;
+        const double sigma = sigma_scale(mv, engine->gumbel_c_visit, engine->gumbel_c_scale, engine->gumbel_sigma_cap);
+        double vm = root->calculate_v_mix(config.contempt);
+        std::sort(non_forced_visited.begin(), non_forced_visited.end(),
+                  [&](MCTSEdge* a, MCTSEdge* b) {
+            if (a->child->visits != b->child->visits) return a->child->visits > b->child->visits;
+            return gscore(a, sigma, vm) > gscore(b, sigma, vm);
+        });
+        MCTSEdge* e1 = non_forced_visited[0];
+        MCTSEdge* e2 = (non_forced_visited.size() > 1) ? non_forced_visited[1] : e1;
+        return (gscore(e1, sigma, vm) > gscore(e2, sigma, vm)) ? e1 : e2;
+    };
+
+    if (!non_forced_visited.empty()) {
+        top_edge = pick_top();
+        best_q = -top_edge->child->expected_value(config.contempt);
+    }
+
+    MCTSEdge* top_mhd = nullptr;
+    for (MCTSEdge* e : mhd_edges) {
+        if (top_mhd == nullptr || e->child->visits > top_mhd->child->visits) top_mhd = e;
+    }
+
+    bool use_mhd = false;
+    if (top_mhd != nullptr) {
+        if (top_edge == nullptr) {
+            use_mhd = true;   // no non-draw option to play
+        } else {
+            const double va   = static_cast<double>(top_edge->child->visits);
+            const double vm   = static_cast<double>(top_mhd->child->visits);
+            const double lead = std::max(va, vm);
+            const bool alt_ok = va >= config.draw_min_visit_share * lead;
+            const bool mhd_ok = vm >= config.draw_min_visit_share * lead;
+            if (alt_ok && mhd_ok) {
+                use_mhd = (best_q <= config.draw_cutoff);   // both backed: value decides
+            } else {
+                use_mhd = mhd_ok;                           // only one side has support: use it
+            }
+        }
+    }
+
+    // Rule A: Win
+    if (!winning_edges.empty()) {
+        int min_dtm = 999999;
+        for (MCTSEdge* e : winning_edges) if (e->child->distance_to_mate < min_dtm) min_dtm = e->child->distance_to_mate;
+        std::vector<chess::Move> best_moves;
+        for (MCTSEdge* e : winning_edges) if (e->child->distance_to_mate == min_dtm) best_moves.push_back(e->move);
+        
+        std::uniform_int_distribution<> dist(0, (int)best_moves.size() - 1);
+        result.best_move = best_moves[dist(rng)];
+
+    // Rule B: Proven Draw
+    } else if (!draw_edges.empty() && best_q <= config.draw_cutoff) {
+        std::uniform_int_distribution<> dist(0, (int)draw_edges.size() - 1);
+        result.best_move = draw_edges[dist(rng)]->move;
+
+    // Rule C: Mover-Has-Draw (PV / no-escape draw preference, not proven)
+    // Same trigger as Rule B: best non-forced option is at-or-below the draw
+    // cutoff, so the flagged draw-heading line is preferable to letting the
+    // NN's noisy positive estimate on non-forced children win. Checked after
+    // Rule B so a proven draw always beats a preference-only draw.
+    // Take highest visit count (most confident in true draw)
+    } else if (use_mhd) {
+        MCTSEdge* best = mhd_edges[0];
+        for (MCTSEdge* e : mhd_edges) {
+            if (e->child->visits > best->child->visits) best = e;
+        }
+        result.best_move = best->move;
+    // Rule D: Resign if below threshold
+    } else if (use_resignation && !non_forced_visited.empty() && best_q < config.resignation_cutoff) {
+        // Check for !non_forced_visited.empty() means if a forced loss is found, it will be played out to mate
+        logger.log("INFO", "Best Value (" + std::to_string(best_q) + ") is below cutoff. Triggering Resignation.");
+        result.resigned = true;
+        result.best_move = chess::Move::NO_MOVE;
+
+    // Rule E: Temperature / Deterministic
+    } else if (!non_forced_visited.empty()) {
+        if (ply_count <= config.temperature_ply_cutoff) {
+            // q̃(a) = Q(a) − σ(a)/√visits(a),  σ² from search-averaged WDL
+            // weight(a) = visits(a) * exp(-q_drop(a) / temperature)
+            double temp = config.temperature_q_decay;
+            size_t n = non_forced_visited.size();
+
+            std::vector<double> q_tilde(n);
+            double best_q_tilde = -2.0;
+            for (size_t i = 0; i < n; ++i) {
+                MCTSNode* c = non_forced_visited[i]->child;
+                double q = -c->expected_value(config.contempt);
+
+                // Search-averaged WDL (c->visits > 0 guaranteed by upstream filter)
+                double pw = c->w_sum / c->visits;
+                double pl = c->l_sum / c->visits;
+
+                // Var[v], v ∈ {-1, 0, +1}: E[v] = pw − pl, E[v²] = pw + pl
+                // Symmetric in w/l, so the child-perspective flip needs no sign handling
+                double ev     = pw - pl;
+                double sigma2 = (pw + pl) - ev * ev;
+                double sigma  = std::sqrt(std::max(sigma2, 0.0));
+
+                q_tilde[i] = q - sigma / std::sqrt(static_cast<double>(c->visits));
+                if (q_tilde[i] > best_q_tilde) best_q_tilde = q_tilde[i];
+            }
+
+            std::vector<double> weights(n);
+            double total_weight = 0.0;
+            for (size_t i = 0; i < n; ++i) {
+                double q_drop = best_q_tilde - q_tilde[i];  // >= 0 by construction
+                weights[i] = non_forced_visited[i]->child->visits * std::exp(-q_drop / temp);
+                total_weight += weights[i];
+            }
+
+            // Log sampling distribution
+            if (logger.get_level() <= 20) {
+                logger.log("INFO", "");
+                logger.log("INFO", "--- Temperature Sampling (Ply " + std::to_string(ply_count) + ") ---");
+
+                std::stringstream rss;
+                rss << "Temp=" << std::fixed << std::setprecision(3) << temp
+                    << " | Moves=" << n << " | BestQt=" << std::setprecision(4) << best_q_tilde;
+                logger.log("INFO", rss.str());
+
+                char table_header[256];
+                snprintf(table_header, sizeof(table_header),
+                    "%-8s %8s %8s %8s %8s %8s %8s %8s",
+                    "Move", "Visits", "Q", "Sigma", "Qt", "Qdrop", "Weight", "P%");
+                logger.log("INFO", table_header);
+                logger.log("INFO", std::string(72, '-'));
+
+                // Sort display order by visits without disturbing the sampling arrays
+                std::vector<size_t> order(n);
+                std::iota(order.begin(), order.end(), 0);
+                std::sort(order.begin(), order.end(), [&](size_t a, size_t b) {
+                    return non_forced_visited[a]->child->visits > non_forced_visited[b]->child->visits;
+                });
+
+                for (size_t idx : order) {
+                    MCTSEdge* e = non_forced_visited[idx];
+                    MCTSNode* c = e->child;
+                    double q  = -c->expected_value(config.contempt);
+                    double pw = c->w_sum / c->visits;
+                    double pl = c->l_sum / c->visits;
+                    double ev = pw - pl;
+                    double sigma = std::sqrt(std::max((pw + pl) - ev * ev, 0.0));
+                    double q_drop = best_q_tilde - q_tilde[idx];
+                    double pct = (weights[idx] / total_weight) * 100.0;
+
+                    char line[256];
+                    snprintf(line, sizeof(line),
+                        "%-8s %8d %8.4f %8.4f %8.4f %8.4f %8.4f %8.1f",
+                        chess::uci::moveToUci(e->move).c_str(), c->visits,
+                        q, sigma, q_tilde[idx], q_drop, weights[idx], pct);
+                    logger.log("INFO", line);
+                }
+
+                logger.log("INFO", std::string(72, '-'));
+                logger.log("INFO", "");
+            }
+
+            std::discrete_distribution<> d(weights.begin(), weights.end());
+            result.best_move = non_forced_visited[d(rng)]->move;
+        } else {
+            result.best_move = top_edge->move;
+        }
+        
+    // Rule F: Delay Mate
+    } else {
+        // Delay mate
+        if (!losing_edges.empty()) {
+            MCTSEdge* best_delay = losing_edges[0];
+            for (MCTSEdge* e : losing_edges) {
+                if (e->child->distance_to_mate > best_delay->child->distance_to_mate) best_delay = e;
+            }
+            result.best_move = best_delay->move;
+        // Should never be reached
+        } else {
+            std::uniform_int_distribution<> dist(0, num_children - 1);
+            result.best_move = all_edges[dist(rng)]->move;
+        }
+    }
+
+    logger.log("INFO", "Move selected: " + chess::uci::moveToUci(result.best_move));
+    return result;
+}
+
+// ---- Replaces load_configs() in action_selector.cpp ------------------------
+// (and in action_selector.hpp change the declaration to:
+//    LoadedConfigs load_configs(const YAML::Node& mcts_n, const YAML::Node& sel_n); )
+
+// Missing keys throw with the full YAML path, e.g. "missing mcts.gumbel.m".
+static YAML::Node require_key(const YAML::Node& parent, const std::string& key,
+                              const std::string& path) {
+    const YAML::Node& p = parent;
+    if (!p.IsMap() || !p[key]) {
+        throw std::runtime_error("config: missing " + path + key);
+    }
+    return p[key];
+}
+
+// -----------------------------------------------------------------------------
+// Shared YAML loader for MctsConfig + ActionSelectorConfig, used by training
+// (DataGenerator), UCI and the tournament.
+//
+//   mcts:                      every search
+//     search: deficit|halving|puct
+//     search_depth, worker_minibatch_size, virtual_loss, contempt,
+//     policy_softmax_temp
+//     gumbel:                  required for deficit and halving
+//       c_visit, c_scale, sigma_cap, noise, explore_c
+//       m                      required for halving only
+//     puct:                    required for puct
+//       cpuct, fpu_reduction
+//   selection: ...
+//
+// Sections a search does not use may be present (the tournament keeps all of
+// them so per-side overrides can switch search) and are simply not read.
+// contempt is read once and mirrored into both structs.
+// -----------------------------------------------------------------------------
+LoadedConfigs load_configs(const YAML::Node& mcts_n, const YAML::Node& sel_n) {
+    LoadedConfigs out;
+    MctsConfig& m = out.mcts;
+
+    const std::string search = require_key(mcts_n, "search", "mcts.").as<std::string>();
+    if      (search == "deficit") m.search = SearchType::DEFICIT;
+    else if (search == "halving") m.search = SearchType::HALVING;
+    else if (search == "puct")    m.search = SearchType::PUCT;
+    else if (search == "hybrid")  m.search = SearchType::HYBRID;   // SH root + PUCT below
+    else if (search == "policy")  m.search = SearchType::POLICY;   // no search, argmax prior
+    else throw std::runtime_error("config: mcts.search must be deficit, halving, puct, hybrid or policy, got '" +
+                                  search + "'");
+
+    const double contempt   = require_key(mcts_n, "contempt", "mcts.").as<double>();
+    m.contempt              = contempt;
+    m.search_depth          = require_key(mcts_n, "search_depth", "mcts.").as<int>();
+    m.batch_size_per_worker = require_key(mcts_n, "worker_minibatch_size", "mcts.").as<int>();
+    m.virtual_loss          = require_key(mcts_n, "virtual_loss", "mcts.").as<double>();
+    m.policy_softmax_temp   = require_key(mcts_n, "policy_softmax_temp", "mcts.").as<double>();
+
+    const bool uses_sh     = (m.search == SearchType::HALVING || m.search == SearchType::HYBRID);
+    const bool uses_gumbel = (m.search == SearchType::DEFICIT || uses_sh);
+    const bool uses_puct   = (m.search == SearchType::PUCT    || m.search == SearchType::HYBRID);
+
+    if (uses_gumbel) {
+        const YAML::Node g = require_key(mcts_n, "gumbel", "mcts.");
+        m.gumbel_c_visit   = require_key(g, "c_visit",   "mcts.gumbel.").as<double>();
+        m.gumbel_c_scale   = require_key(g, "c_scale",   "mcts.gumbel.").as<double>();
+        m.gumbel_sigma_cap = require_key(g, "sigma_cap", "mcts.gumbel.").as<double>();
+        m.gumbel_noise     = require_key(g, "noise",     "mcts.gumbel.").as<double>();
+        if (m.search != SearchType::HYBRID)            // explore_c only acts in the deficit _select branch
+            m.explore_c    = require_key(g, "explore_c", "mcts.gumbel.").as<double>();
+        if (uses_sh)
+            m.gumbel_m     = require_key(g, "m",         "mcts.gumbel.").as<int>();
+    }
+    if (uses_puct) {
+        const YAML::Node p   = require_key(mcts_n, "puct", "mcts.");
+        m.cpuct              = require_key(p, "cpuct",         "mcts.puct.").as<double>();
+        m.puct_fpu_reduction = require_key(p, "fpu_reduction", "mcts.puct.").as<double>();
+    }
+
+    ActionSelectorConfig& s = out.selector;
+    s.contempt                = contempt;
+    s.draw_cutoff             = require_key(sel_n, "draw_cutoff",             "selection.").as<double>();
+    s.temperature_ply_cutoff  = require_key(sel_n, "temperature_ply_cutoff",  "selection.").as<int>();
+    s.temperature_q_decay     = require_key(sel_n, "temperature_q_decay",     "selection.").as<double>();
+    s.resignation_probability = require_key(sel_n, "resignation_probability", "selection.").as<double>();
+    s.resignation_cutoff      = require_key(sel_n, "resignation_cutoff",      "selection.").as<double>();
+    s.draw_min_visit_share    = require_key(sel_n, "draw_min_visit_share",    "selection.").as<double>();
+    return out;
+}

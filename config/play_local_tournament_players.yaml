@@ -1,0 +1,46 @@
+config_file: 'config/play_local_tournament.yaml'                              # Base tournament config (200 games per pairing; global.search_stats: false)
+
+tournament:
+  schedule: round_robin                                                       # every pair: 11 players -> 55 pairings
+  baseline: step_000k                                                         # Elo anchor (0): first checkpoint
+  search_depths: [1000]                                                       # 1k new sims per move (1k-tuned PUCT settings)
+  fixed_overrides: []   # best 1k PUCT cell; reuse on (policy-only ignores these)
+
+players:
+  - name: step_000k
+    checkpoint: '/app/train_dir/models/checkpoints/step_000000_model.pth'
+    model_file: '/app/config/model.yaml'
+  - name: step_010k
+    checkpoint: '/app/train_dir/models/checkpoints/step_010000_model.pth'
+    model_file: '/app/config/model.yaml'
+  - name: step_020k
+    checkpoint: '/app/train_dir/models/checkpoints/step_020000_model.pth'
+    model_file: '/app/config/model.yaml'
+  - name: step_030k
+    checkpoint: '/app/train_dir/models/checkpoints/step_030000_model.pth'
+    model_file: '/app/config/model.yaml'
+  - name: step_040k
+    checkpoint: '/app/train_dir/models/checkpoints/step_040000_model.pth'
+    model_file: '/app/config/model.yaml'
+  - name: step_050k
+    checkpoint: '/app/train_dir/models/checkpoints/step_050000_model.pth'
+    model_file: '/app/config/model.yaml'
+  - name: step_060k
+    checkpoint: '/app/train_dir/models/checkpoints/step_060000_model.pth'
+    model_file: '/app/config/model.yaml'
+  - name: step_070k
+    checkpoint: '/app/train_dir/models/checkpoints/step_070000_model.pth'
+    model_file: '/app/config/model.yaml'
+  - name: step_080k
+    checkpoint: '/app/train_dir/models/checkpoints/step_080000_model.pth'
+    model_file: '/app/config/model.yaml'
+  - name: step_090k
+    checkpoint: '/app/train_dir/models/checkpoints/step_090000_model.pth'
+    model_file: '/app/config/model.yaml'
+  - name: step_100k
+    checkpoint: '/app/train_dir/models/checkpoints/step_100000_model.pth'
+    model_file: '/app/config/model.yaml'
+  - name: step_100k_policy
+    checkpoint: '/app/train_dir/models/checkpoints/step_100000_model.pth'
+    model_file: '/app/config/model.yaml'
+    overrides: [mcts.search=policy]

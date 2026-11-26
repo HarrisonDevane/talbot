@@ -1,0 +1,732 @@
+import os
+import sys
+import argparse
+import time
+import yaml
+import logging
+import subprocess
+import shutil
+import random
+import psutil
+import torch
+import struct
+import lmdb
+import warnings
+import json
+import gc
+import numpy as np
+import onnxruntime as ort
+import onnx
+
+from onnxruntime.quantization import (
+    quantize_static, 
+    CalibrationDataReader, 
+    CalibrationMethod,
+    QuantType, 
+    QuantFormat
+)
+from trainer import TrainTask
+from model import ChessAIModel, fuse_bn_for_export
+
+current_script_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.abspath(os.path.join(current_script_dir, ".."))
+
+DEFAULT_TRAIN_CONFIG = os.path.join(root_dir, "config", "train.yaml")
+DEFAULT_MODEL_CONFIG = os.path.join(root_dir, "config", "model.yaml")
+
+warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"torch.onnx.*")
+logging.getLogger().setLevel(logging.ERROR)
+ort.set_default_logger_severity(3)
+
+# Format matching the C++ structs
+CPP_STATE_FMT = 'QQdQQQ'  
+PY_STATE_FMT = 'Qd'       
+
+def head_node_names(graph, entry_prefixes=("/policy_conv1/", "/value_conv/")):
+    """All ONNX nodes downstream of the policy/value head entry points."""
+    consumers = {}
+    for n in graph.node:
+        for t in n.input:
+            consumers.setdefault(t, []).append(n)
+    stack = [n for n in graph.node if n.name.startswith(entry_prefixes)]
+    seen = set()
+    while stack:
+        n = stack.pop()
+        if n.name in seen:
+            continue
+        seen.add(n.name)
+        for t in n.output:
+            stack.extend(consumers.get(t, []))
+    return sorted(seen)
+
+class RLOrchestrator:
+    def __init__(self, config_path=DEFAULT_TRAIN_CONFIG, model_config_path=DEFAULT_MODEL_CONFIG):
+        self.logger = None
+        self.state_logger = None
+
+        self.config_path = os.path.abspath(config_path)
+        self.model_config_path = os.path.abspath(model_config_path)
+
+        with open(self.config_path, 'r') as f:
+            self.params_config = yaml.safe_load(f)
+        with open(self.model_config_path, 'r') as f:
+            self.model_config = yaml.safe_load(f)
+
+        train_dir_cfg = self.params_config['global']['train_dir']
+        if os.path.isabs(train_dir_cfg):
+            self.train_dir = train_dir_cfg
+        else:
+            self.train_dir = os.path.abspath(os.path.join(root_dir, train_dir_cfg))
+        os.makedirs(os.path.join(self.train_dir, "models"), exist_ok=True)
+
+        self.buffer_file_path = os.path.join(self.train_dir, "replay_memory.lmdb")
+        
+        db_is_new = not os.path.exists(self.buffer_file_path)
+        
+        if db_is_new:
+            os.makedirs(self.buffer_file_path, exist_ok=True)
+
+        self.env = lmdb.open(
+            self.buffer_file_path,
+            map_size=1024 * 1024 * 1024 * self.params_config['global']['buffer_size_gb'], 
+            readonly=False,
+            lock=True,
+            readahead=False,
+        )
+
+        if db_is_new:
+            self._initialize_empty_lmdb()
+
+        self.state_config = self._read_state_from_lmdb()
+
+        self.current_step = self.state_config['lifetime']['training_steps']
+        self.total_hours_accumulator = self.state_config['lifetime']['hours_training'] 
+        
+        self.total_steps = self.params_config['global']['total_training_steps']
+
+        rotation_interval = self.params_config['global']['logging_rotation_steps']
+        target_folder_step = (self.current_step // rotation_interval) * rotation_interval
+        initial_log_dir = os.path.join(self.train_dir, f"run_step_{target_folder_step:06d}")
+
+        os.makedirs(initial_log_dir, exist_ok=True)
+        
+        self.logger = self._setup_logger(
+            log_dir=initial_log_dir, 
+            name="RLOrchestrator", 
+            filename="orchestrator_py.log", 
+            level=self.params_config['data_generation']['main_logging_level'], 
+            fmt="[%(asctime)s] [%(levelname)s] %(message)s"
+        )
+        
+        self.state_logger = self._setup_logger(
+            log_dir=initial_log_dir, 
+            name="StateLogger", 
+            filename="state_metrics.log", 
+            level=logging.INFO, 
+            fmt="[%(asctime)s] %(message)s"
+        )
+
+        self._apply_self_cgroup(
+            "talbot_trainer",
+            self.params_config['memory']['trainer_high_gb'],
+            self.params_config['memory']['trainer_max_gb'],
+        )
+
+        self.model_pth = os.path.join(self.train_dir, "models", "model.pth")
+        self.train_task = None
+        self.next_build_step = self._calculate_next_build_step(self.current_step)
+        
+        if self._get_lmdb_signal(b"__TRT_EXPORT_SIGNAL") is None:
+            if not os.path.exists(self.model_pth):
+                self._create_seed_models()
+
+    def _initialize_empty_lmdb(self):
+        cpp_blob = struct.pack(CPP_STATE_FMT, 0, 0, 0.0, 0, 0, 0)
+        py_blob = struct.pack(PY_STATE_FMT, 0, 0.0)
+        
+        with self.env.begin(write=True) as txn:
+            txn.put(b"__CPP_STATE", cpp_blob)
+            txn.put(b"__PY_STATE", py_blob)
+
+    def _get_lmdb_signal(self, key: bytes):
+        with self.env.begin(write=False) as txn:
+            blob = txn.get(key)
+            if blob:
+                return struct.unpack('Q', blob)[0]
+            return None
+        
+    def _calculate_next_build_step(self, current_target_step):
+        if current_target_step == 0:
+            return int(self.params_config['global']['first_build_steps'])
+        build_steps = int(self.params_config['global']['build_steps'])
+        return ((current_target_step // build_steps) + 1) * build_steps
+
+    def _launch_in_cgroup(self, cgroup_name, memory_high_gb, memory_max_gb, cmd):
+        """
+        Create a cgroup, apply memory limits, launch the command into it.
+        Returns the Popen object.
+        """
+        cgroup_path = f"/sys/fs/cgroup/{cgroup_name}"
+        os.makedirs(cgroup_path, exist_ok=True)
+        
+        # Enable memory controller (may already be enabled)
+        with open("/sys/fs/cgroup/cgroup.subtree_control", "w") as f:
+            f.write("+memory")
+        
+        # Set limits
+        with open(f"{cgroup_path}/memory.high", "w") as f:
+            f.write(str(memory_high_gb * 1024**3))
+        with open(f"{cgroup_path}/memory.max", "w") as f:
+            f.write(str(memory_max_gb * 1024**3))
+        
+        def _move_to_cgroup():
+            with open(f"{cgroup_path}/cgroup.procs", "w") as f:
+                f.write(str(os.getpid()))
+        
+        return subprocess.Popen(cmd, preexec_fn=_move_to_cgroup)
+
+    def _apply_self_cgroup(self, cgroup_name, high_gb, max_gb):
+        cgroup_path = f"/sys/fs/cgroup/{cgroup_name}"
+        os.makedirs(cgroup_path, exist_ok=True)
+        with open("/sys/fs/cgroup/cgroup.subtree_control", "w") as f:
+            f.write("+memory")
+        with open(f"{cgroup_path}/memory.high", "w") as f:
+            f.write(str(high_gb * 1024**3))
+        with open(f"{cgroup_path}/memory.max", "w") as f:
+            f.write(str(max_gb * 1024**3))
+        with open(f"{cgroup_path}/cgroup.procs", "w") as f:
+            f.write(str(os.getpid()))
+                    
+    def _wait_for_trt_engine(self):
+        target_step = self._get_lmdb_signal(b"__TRT_EXPORT_SIGNAL")
+
+        ready_step = self._get_lmdb_signal(b"__TRT_ENGINE_READY")
+        
+        if ready_step is None or ready_step < target_step:
+            self.logger.info(f"Waiting for C++ to build TRT Engine for step {target_step}...")
+
+            while True:
+                ready_step = self._get_lmdb_signal(b"__TRT_ENGINE_READY")
+                if ready_step is not None and ready_step >= target_step:
+                    break
+                time.sleep(1.0)
+            
+            self.logger.info(f"TRT Engine for step {target_step} is ready.")
+
+    def _read_state_from_lmdb(self):
+        with self.env.begin(write=False) as txn:
+            cpp_blob = txn.get(b"__CPP_STATE")
+            py_blob = txn.get(b"__PY_STATE")
+
+        if not cpp_blob or not py_blob:
+            return {
+                'buffer': {'count': 0, 'head_ptr': 0, 'wraps': 0},
+                'lifetime': {
+                    'training_steps': 0, 
+                    'games_played': 0, 
+                    'samples_generated': 0, 
+                    'hours_training': 0.0, 
+                    'self_play_entropy': 0.0
+                }
+            }
+
+        cpp_state = struct.unpack(CPP_STATE_FMT, cpp_blob)
+        py_state = struct.unpack(PY_STATE_FMT, py_blob)
+
+        return {
+            'buffer': {
+                'count': cpp_state[3],
+                'head_ptr': cpp_state[4],
+                'wraps': cpp_state[5]
+            },
+            'lifetime': {
+                'training_steps': py_state[0],
+                'games_played': cpp_state[0],
+                'samples_generated': cpp_state[1],
+                'hours_training': py_state[1],
+                'self_play_entropy': cpp_state[2]
+            }
+        }
+
+    def _write_py_state_to_lmdb(self):
+        blob = struct.pack(
+            PY_STATE_FMT, 
+            self.state_config['lifetime']['training_steps'], 
+            self.state_config['lifetime']['hours_training']
+        )
+        with self.env.begin(write=True) as txn:
+            txn.put(b"__PY_STATE", blob)
+
+    def _create_seed_models(self):
+        random.seed(self.params_config['training']['seed'])
+        torch.manual_seed(self.params_config['training']['seed'])
+        model = ChessAIModel(self.model_config)
+        
+        # Ensure base models directory exists
+        os.makedirs(os.path.join(self.train_dir, 'models'), exist_ok=True)
+        
+        # 1. Save the active model for the C++ engine
+        save_dict = {'model_state_dict': model.state_dict()}
+        torch.save(save_dict, self.model_pth)
+        
+        # 2. Save the permanent seed snapshot to the correct subfolder
+        backup_dir = os.path.join(self.train_dir, 'models', 'checkpoints')
+        os.makedirs(backup_dir, exist_ok=True)
+        
+        seed_backup_path = os.path.join(backup_dir, 'step_000000_model.pth')
+        torch.save(save_dict, seed_backup_path)
+        
+        self._export_to_cpp()
+    
+    def _setup_logger(self, log_dir, name, filename, level, fmt):
+        logger = logging.getLogger(name)
+        logger.setLevel(level)
+        logger.propagate = False
+        if logger.hasHandlers():
+            logger.handlers.clear()
+        formatter = logging.Formatter(fmt)
+        log_filepath = os.path.join(log_dir, filename)
+        file_handler = logging.FileHandler(log_filepath, mode='a')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        return logger
+
+    def run(self):
+        training_cores = self.params_config['core_pinning']['training']
+        num_threads = len(training_cores)
+        
+        for var in ["OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"]:
+            os.environ[var] = str(num_threads)
+            
+        torch.set_num_threads(num_threads)
+        
+        proc = psutil.Process()
+        all_cores = list(range(psutil.cpu_count()))
+        proc.cpu_affinity(all_cores)
+
+        engine_exe = os.path.abspath(os.path.join(root_dir, "build", "talbot_data_generator"))
+        self.logger.info(f"Launching C++ Engine: {engine_exe}")
+
+        cmd = [
+            engine_exe,
+            "--train_dir", self.train_dir,
+            "--config_file", self.config_path,
+            "--model_file", self.model_config_path,
+            "--db_path", self.buffer_file_path
+        ]
+                
+        engine_process = self._launch_in_cgroup(
+            "talbot_data_generator",
+            self.params_config['memory']['data_generator_high_gb'],
+            self.params_config['memory']['data_generator_max_gb'],
+            cmd
+        )
+
+        metrics_script = os.path.abspath(os.path.join(current_script_dir, "performance_metrics.py"))
+        self.logger.info(f"Launching performance metrics monitor: {metrics_script}")
+        metrics_process = subprocess.Popen(
+            [sys.executable, metrics_script, self.train_dir, str(os.getpid())],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+        self._wait_for_trt_engine()
+
+        self.logger.info("Initializing PyTorch TrainTask...")
+        self.train_task = TrainTask(
+            model_path=self.model_pth,
+            model_config=self.model_config,
+            main_train_config=self.params_config,
+            state_config=self.state_config,
+            db_path=self.buffer_file_path 
+        )
+
+        proc.cpu_affinity(training_cores)
+        self.logger.info(f"Python Orchestrator pinned to cores {training_cores}.")
+
+        rotation_interval = self.params_config['global']['logging_rotation_steps']
+        target_folder_step = (self.current_step // rotation_interval) * rotation_interval
+        current_log_dir = os.path.join(self.train_dir, f"run_step_{target_folder_step:06d}")
+
+        last_time_check = time.time()
+
+        try:
+            while self.current_step < self.total_steps:
+                
+                current_time = time.time()
+                self.total_hours_accumulator += (current_time - last_time_check) / 3600.0
+                last_time_check = current_time
+
+                self.state_config = self._read_state_from_lmdb()
+                self.state_config['lifetime']['hours_training'] = round(self.total_hours_accumulator, 6)
+
+                buffer_size = self.state_config['buffer']['count']
+                samples_generated = self.state_config['lifetime']['samples_generated']
+                
+                samples_per_step = self.params_config['training']['batch_size'] / self.params_config['training']['sampling_ratio']
+                if samples_per_step <= 0:
+                    samples_per_step = 1 
+                    
+                target_steps = int(samples_generated // samples_per_step)
+
+                if self.current_step >= target_steps:
+                    self._write_py_state_to_lmdb()
+                    time.sleep(0.5)
+                    continue
+
+                min_required = self.params_config['training']['batch_size']
+                if buffer_size < min_required:
+                    self._write_py_state_to_lmdb()
+                    time.sleep(0.5)
+                    continue
+
+                step_start_time = time.time()
+
+                target_folder_step = (self.current_step // rotation_interval) * rotation_interval
+                new_log_dir = os.path.join(self.train_dir, f"run_step_{target_folder_step:06d}")
+
+                if new_log_dir != current_log_dir:
+                    os.makedirs(new_log_dir, exist_ok=True)
+                    current_log_dir = new_log_dir
+                    
+                    self.logger = self._setup_logger(
+                        log_dir=current_log_dir, 
+                        name="RLOrchestrator", 
+                        filename="orchestrator_py.log", 
+                        level=self.params_config['data_generation']['main_logging_level'], 
+                        fmt="[%(asctime)s] [%(levelname)s] %(message)s"
+                    )
+                    
+                    self.state_logger = self._setup_logger(
+                        log_dir=current_log_dir, 
+                        name="StateLogger", 
+                        filename="state_metrics.log", 
+                        level=logging.INFO, 
+                        fmt="[%(asctime)s] %(message)s"
+                    )
+                    
+                    self.logger.info(f"New logging phase started at step {self.current_step}")
+
+                self.train_task.run_single_step(current_log_dir, self.state_config)
+                self.current_step += 1
+                self.state_config['lifetime']['training_steps'] = self.current_step
+
+                if self.current_step >= self.next_build_step:
+                    self.train_task.save_checkpoint(self.model_pth)
+
+                    # Free cached activations so the C++ builder has headroom, but
+                    # keep model/optimizer/prefetcher resident (warm resume).
+                    self.train_task.pause_for_build()
+
+                    self._export_to_cpp()
+                    self._wait_for_trt_engine()
+
+                    # Store backup and state accurately corresponding to the build step
+                    backup_dir = os.path.join(self.train_dir, 'models', 'checkpoints')
+                    os.makedirs(backup_dir, exist_ok=True)
+
+                    model_backup_path = os.path.join(backup_dir, f'step_{self.current_step:06d}_model.pth')
+                    shutil.copy(self.model_pth, model_backup_path)
+                    shutil.copy(self.config_path, os.path.join(current_log_dir, f'step_{self.current_step:06d}_config.yaml'))
+                    self.logger.info(f"Periodic backup saved at step {self.current_step}.")
+
+                    self.train_task.resume_after_build()
+                    self.logger.info("Resumed PyTorch TrainTask after build (warm, no rebuild).")
+
+                    self.next_build_step = self._calculate_next_build_step(self.current_step)
+
+                total_time = time.time() - step_start_time
+
+                self.logger.debug(
+                    f"Step {self.current_step} complete | "
+                    f"Buffer: {buffer_size} | "
+                    f"Step time: {total_time:.2f}s"
+                )
+
+                self._write_py_state_to_lmdb()
+                self.state_logger.info(json.dumps(self.state_config))
+
+        finally:
+            self.logger.info("Shutting down C++ engine...")
+            engine_process.terminate()
+            engine_process.wait()
+
+            if 'metrics_process' in locals():
+                self.logger.info("Shutting down performance metrics monitor...")
+                metrics_process.terminate()
+                metrics_process.wait()
+            
+
+    def _export_to_cpp(self):
+        with self.env.begin(write=True) as txn:
+            current = txn.get(b"__TRT_HALT_SIGNAL")
+            prev = struct.unpack('Q', current)[0] if current else 0
+            txn.put(b"__TRT_HALT_SIGNAL", struct.pack('Q', prev + 1))
+
+        onnx_path = self.model_pth.replace(".pth", ".onnx")
+        target_calib_samples = self.params_config['training']['batch_size']
+
+        # 1. Check LMDB buffer count FIRST
+        with self.env.begin(write=False) as txn:
+            cpp_blob = txn.get(b"__CPP_STATE")
+            actual_count = struct.unpack('QQdQQQ', cpp_blob)[3] if cpp_blob else 0
+
+        # 2. If buffer is too small, export straight to native FP16 (Fast path)
+        if actual_count < target_calib_samples:
+            self.logger.info(f"LMDB buffer has {actual_count} samples (< {target_calib_samples}). Exporting native FP16 model.")
+
+            checkpoint = torch.load(self.model_pth, map_location='cpu', weights_only=True)
+            model = ChessAIModel(self.model_config)
+            model.load_state_dict(checkpoint['model_state_dict'])
+            model.eval()
+
+            model = fuse_bn_for_export(model)
+            model = model.cuda().half()
+
+            dummy_input = torch.zeros(
+                1,
+                self.model_config['model']['input_planes'],
+                self.model_config['model']['board_dim'],
+                self.model_config['model']['board_dim'],
+                dtype=torch.float16
+            ).cuda()
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=DeprecationWarning)
+                torch.onnx.export(
+                    model,
+                    dummy_input,
+                    onnx_path,
+                    export_params=True,
+                    opset_version=17,
+                    do_constant_folding=True,
+                    input_names=['input'],
+                    output_names=['policy', 'value'],
+                    dynamic_axes={'input': {0: 'batch_size'}, 'policy': {0: 'batch_size'}, 'value': {0: 'batch_size'}},
+                    dynamo=False
+                )
+
+            del model
+            del dummy_input
+            del checkpoint
+            gc.collect()
+            torch.cuda.synchronize()
+            torch.cuda.empty_cache()
+
+        else:
+            # 3. Buffer has enough data: Export FP32 base, then run ONNX static quantization
+            self.logger.info(f"LMDB buffer has {actual_count} samples. Running ONNX PTQ calibration...")
+
+            checkpoint = torch.load(self.model_pth, map_location='cpu', weights_only=True)
+            model = ChessAIModel(self.model_config)
+            model.load_state_dict(checkpoint['model_state_dict'])
+            model.eval()
+
+            model = fuse_bn_for_export(model)
+            model = model.cuda()
+
+            # Enforce FP16 I/O boundaries while keeping internals FP32 for the quantizer
+            original_forward = model.forward
+            def trt_export_forward(x):
+                p, v = original_forward(x.float())
+                return p.half(), v.half()
+            model.forward = trt_export_forward
+
+            dummy_input = torch.zeros(
+                1,
+                self.model_config['model']['input_planes'],
+                self.model_config['model']['board_dim'],
+                self.model_config['model']['board_dim'],
+                dtype=torch.float16
+            ).cuda()
+
+            fp32_onnx_path = onnx_path.replace(".onnx", "_fp32.onnx")
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=DeprecationWarning)
+                torch.onnx.export(
+                    model,
+                    dummy_input,
+                    fp32_onnx_path,
+                    export_params=True,
+                    opset_version=17,
+                    do_constant_folding=True,
+                    input_names=['input'],
+                    output_names=['policy', 'value'],
+                    dynamic_axes={'input': {0: 'batch_size'}, 'policy': {0: 'batch_size'}, 'value': {0: 'batch_size'}},
+                    dynamo=False
+                )
+
+            model.forward = original_forward
+            del trt_export_forward
+            del original_forward
+            del model
+            del dummy_input
+            del checkpoint
+            gc.collect()
+            torch.cuda.synchronize()
+            torch.cuda.empty_cache()
+
+            TARGET_CALIB_SAMPLES = self.params_config['training']['batch_size']
+            CALIB_BATCH_SIZE = self.params_config['training']['calib_batch_size']
+
+            calib_batches = []
+            calib_masks = []
+            total = 0
+            while total < TARGET_CALIB_SAMPLES:
+                slot = self.train_task.prefetcher.ready_queue.get()
+                valid_idx = self.train_task.prefetcher.shm_valid[slot].item()
+
+                full = (
+                    self.train_task.prefetcher.shm_b[slot][:valid_idx]
+                    .numpy()
+                    .astype(np.float16)
+                    .copy()
+                )
+                # Legal-move masks, for the masked INT8 vs FP32 check below.
+                mfull = self.train_task.prefetcher.shm_m[slot][:valid_idx].numpy().copy()
+                self.train_task.prefetcher.free_queue.put(slot)
+
+                # Slice the prefetcher batch into calib-sized chunks
+                for start in range(0, valid_idx, CALIB_BATCH_SIZE):
+                    chunk = full[start:start + CALIB_BATCH_SIZE]
+                    calib_batches.append({"input": chunk})
+                    calib_masks.append(mfull[start:start + CALIB_BATCH_SIZE])
+                    total += chunk.shape[0]
+                    if total >= TARGET_CALIB_SAMPLES:
+                        break
+
+            self.logger.info(
+                f"Collected {total} samples across {len(calib_batches)} batches "
+                f"({CALIB_BATCH_SIZE} per batch) for calibration."
+            )
+
+            class LMDBCalibrationDataReader(CalibrationDataReader):
+                def __init__(self, batches):
+                    self.enum_data = iter(batches)
+                def get_next(self):
+                    return next(self.enum_data, None)
+
+            # Exclude the heads using the REAL ONNX node names (walks forward
+            # from the head entry points, so unnamed Relu/Flatten/Softmax/Cast
+            # nodes inside the heads are excluded too).
+            fp32_graph = onnx.load(fp32_onnx_path).graph
+            nodes_to_exclude = head_node_names(fp32_graph, entry_prefixes=("/policy_conv2/", "/value_conv/"))
+            required = ("/policy_conv2/", "/value_conv/", "/value_fc1/", "/value_fc2/")
+            missing = [p for p in required
+                       if not any(n.startswith(p) for n in nodes_to_exclude)]
+            if missing:
+                self.logger.warning(f"Head nodes not found for exclusion: {missing}")
+            self.logger.info(f"Excluding {len(nodes_to_exclude)} head nodes from INT8.")
+
+            data_reader = LMDBCalibrationDataReader(calib_batches)
+
+            extra_options = {
+                "WeightSymmetric": True,
+                "ActivationSymmetric": True,
+                "QuantizeBias": False
+            }
+
+            quantize_static(
+                model_input=fp32_onnx_path,
+                model_output=onnx_path,
+                calibration_data_reader=data_reader,
+                quant_format=QuantFormat.QDQ,
+                calibrate_method=CalibrationMethod.MinMax,
+                per_channel=True,
+                weight_type=QuantType.QInt8,
+                activation_type=QuantType.QInt8,
+                nodes_to_exclude=nodes_to_exclude,
+                calibration_providers=[("CUDAExecutionProvider", {
+                    "device_id": 0,
+                    "arena_extend_strategy": "kSameAsRequested",
+                    "gpu_mem_limit": 2 * 1024**3,
+                })],
+                extra_options=extra_options
+            )
+
+            # Structural check: no Q/DQ nodes should touch the heads.
+            int8_graph = onnx.load(onnx_path).graph
+            head_names = ("policy_conv2", "value_conv", "value_fc1", "value_fc2")
+            bad = [n.name for n in int8_graph.node
+                   if n.op_type in ("QuantizeLinear", "DequantizeLinear")
+                   and any(h in n.name for h in head_names)]
+            if bad:
+                self.logger.warning(f"Head layers still quantized: {bad}")
+
+            # Numeric check: INT8 vs FP32 on all calibration positions, on GPU,
+            # illegal moves masked exactly as in the training loss.
+            try:
+                prov = [("CUDAExecutionProvider", {"device_id": 0, "gpu_mem_limit": 2 * 1024**3}),
+                        "CPUExecutionProvider"]
+                fp32_sess = ort.InferenceSession(fp32_onnx_path, providers=prov)
+                int8_sess = ort.InferenceSession(onnx_path, providers=prov)
+                top1s, top3s, kls, dEs = [], [], [], []
+                for b, mk in zip(calib_batches, calib_masks):
+                    x = b["input"]
+                    p32, v32 = fp32_sess.run(None, {"input": x})
+                    p8, v8 = int8_sess.run(None, {"input": x})
+                    p32 = np.where(mk, p32.astype(np.float64), -1e9)
+                    p8 = np.where(mk, p8.astype(np.float64), -1e9)
+                    q32 = np.exp(p32 - p32.max(1, keepdims=True)); q32 /= q32.sum(1, keepdims=True)
+                    q8 = np.exp(p8 - p8.max(1, keepdims=True)); q8 /= q8.sum(1, keepdims=True)
+                    best = q32.argmax(1)
+                    top1s.append(q8.argmax(1) == best)
+                    top3s.append((np.argsort(-q8, 1)[:, :3] == best[:, None]).any(1))
+                    kls.append((q32 * (np.log(q32 + 1e-12) - np.log(q8 + 1e-12))).sum(1))
+                    v32 = v32.astype(np.float64); v8 = v8.astype(np.float64)
+                    # Value head outputs WDL probabilities; compare expected score W - L.
+                    dEs.append(np.abs((v32[:, 0] - v32[:, 2]) - (v8[:, 0] - v8[:, 2])))
+                top1 = float(np.concatenate(top1s).mean())
+                top3 = float(np.concatenate(top3s).mean())
+                kl = np.concatenate(kls)
+                dE = np.concatenate(dEs)
+                msg = (f"INT8 check ({len(dE)} pos, {int8_sess.get_providers()[0]}): "
+                       f"top1={top1:.3f} top3={top3:.3f} | "
+                       f"KL mean={kl.mean():.4f} p95={np.percentile(kl, 95):.4f} | "
+                       f"|dE| mean={dE.mean():.4f} p95={np.percentile(dE, 95):.4f} max={dE.max():.4f}")
+                self.logger.info(msg)
+                if top3 < 0.97 or kl.mean() > 0.05 or dE.mean() > 0.06:
+                    self.logger.warning("INT8 export deviates from FP32 beyond thresholds. " + msg)
+                del fp32_sess, int8_sess
+            except Exception as e:
+                self.logger.warning(f"INT8 numeric check failed to run: {e}")
+
+            if os.path.exists(fp32_onnx_path):
+                os.remove(fp32_onnx_path)
+
+            del data_reader
+            del calib_batches
+            del calib_masks
+            gc.collect()
+
+            torch.cuda.synchronize()
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
+
+            self.logger.info(f"INT8 QDQ ONNX export successful: {onnx_path}")
+
+        # 4. Signal completion
+        with self.env.begin(write=True) as txn:
+            current = txn.get(b"__TRT_EXPORT_SIGNAL")
+            prev = struct.unpack('Q', current)[0] if current else 0
+            txn.put(b"__TRT_EXPORT_SIGNAL", struct.pack('Q', prev + 1))
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run Talbot self-play training.")
+    parser.add_argument("--config", default=DEFAULT_TRAIN_CONFIG,
+                        help="Training config (default: config/train.yaml)")
+    parser.add_argument("--model_config", default=DEFAULT_MODEL_CONFIG,
+                        help="Model architecture config (default: config/model.yaml)")
+    args = parser.parse_args()
+
+    orchestrator = RLOrchestrator(args.config, args.model_config)
+    try:
+        orchestrator.run()
+    except KeyboardInterrupt:
+        print("\nManual interruption detected. Shutting down...")
+    except Exception as e:
+        if orchestrator.logger:
+            orchestrator.logger.error(f"Orchestrator encountered an error: {e}", exc_info=True)
+        else:
+            print(f"Orchestrator encountered an error: {e}")

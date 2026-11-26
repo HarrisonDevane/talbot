@@ -1,0 +1,13 @@
+.git
+.gitignore
+build/
+__pycache__/
+venv/
+train_dir/
+backup/
+data/
+docs/
+site/
+logs/
+Dockerfile
+*.md

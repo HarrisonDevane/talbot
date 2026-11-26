@@ -1,0 +1,92 @@
+global:
+  total_training_steps: 100000                                    # Total gradient updates before training halts
+  logging_rotation_steps: 1000                                    # Roll to a fresh log folder every N steps
+  min_buffer_size: 2000000                                        # Positions required before first gradient update
+  max_buffer_size: 40000000                                       # Steady-state replay buffer size (~500K games)
+  buffer_ramp_steps: 40000                                        # Linear ramp from min -> max buffer size over N steps
+  buffer_size_gb: 24                                              # LMDB file size on disk (fixed allocation)
+  first_build_steps: 10                                           # First build to allow rapid int8 integration
+  build_steps: 1000                                               # Rebuild TensorRT engine every N steps (self-play pauses during rebuild)
+  train_dir: 'train_dir'                                          # Output root: checkpoints, ONNX exports, .engine files
+
+inference:
+  batch_size: 128                                                 # Target GPU batch size; batcher flushes at this size OR after batch_timeout_ms
+  batch_size_factor: 32                                           # Shared-RAM slot count = batch_size * this (8192 slots total)
+  batch_timeout_ms: 10                                            # If batch not full after this long, dispatch anyway (avoid starving workers)
+  logging_interval_sec: 10                                        # Batcher stats interval (throughput, batch fullness, wait times)
+  logging_level: 20                                               # 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL
+
+data_generation:
+  workers_per_core: 16                                            # Self-play workers per core
+  adjudication_max_ply_length: 400                                # Hard ply cap; any game reaching this ply is force-drawn
+  adjudication_draw_threshold: 0.9                                # Root D-probability required to count a ply toward adjudication
+  adjudication_draw_plies: 6                                      # Consecutive quiet plies above threshold to trigger adjudication
+  adjudication_draw_min_move: 40                                  # No adjudication before this move number
+  adjudication_draw_probability: 0.9                              # Per-game probability adjudication is enabled (10% play out for calibration)
+  target_shrinkage_k: 2.0                                         # k in completed-Q shrinkage: completedQ = (N*q + k*v_mix) / (N + k)
+  main_logging_level: 20                                          # Main data-generator orchestrator log level
+  worker_logging_level: 30                                        # Per-worker log level: 20=per-move analysis, 30=warnings only, 50=PGN only
+  io_logging_level: 20                                            # LMDB writer log level
+
+mcts:
+  search: halving                                                 # Training always uses sequential halving at the root
+  search_depth: 128                                               # Total MCTS simulations per move (split across log2(m) phases)
+  worker_minibatch_size: 4                                        # Max positions a single worker sends to the batcher per submission
+  virtual_loss: 0.3                                               # Penalty on in-flight leaf's ancestors; acts as regulariser in single-worker-per-tree design
+  contempt: 0.0                                                   # Draw value from side-to-move's perspective (0 = neutral)
+  policy_softmax_temp: 1.0                                        # Softens/sharpens raw policy logits before use in selection (1.0 = no change)
+  gumbel:                                                         # Used by deficit and halving
+    c_visit: 50.0                                                 # Sigma offset: sigma = (c_visit + min(max_visits, sigma_cap)) * c_scale
+    c_scale: 1.0                                                  # Sigma multiplicative gain
+    sigma_cap: 100.0                                              # Cap on max_visits inside sigma
+    noise: 1.0                                                    # Scale of Gumbel noise added to raw prior logits at root
+    explore_c: 0.0                                                # Exploration bonus coefficient, same at every depth (0 = none)
+    m: 16                                                         # Top-m root candidates selected by perturbed prior for sequential halving
+
+pool_sizing:
+  avg_branching: 35.0                                             # Average legal moves per position (~35 for chess)
+  node_safety_factor: 1.5                                         # Multiplicative safety over predicted node count
+  edge_safety_factor: 5.0                                         # Multiplicative safety over predicted edge count
+  node_hard_cap_mb: 50                                            # Per-worker RAM ceiling for MCTSNode pool
+  edge_hard_cap_mb: 100                                           # Per-worker RAM ceiling for MCTSEdge pool
+
+selection:
+  temperature_ply_cutoff: 30                                      # Temperature sampling applies for first N plies; deterministic after
+  temperature_q_decay: 0.1                                        # T in LCB-filtered visit sampling: weight = visits * exp(-q_drop / T)
+  draw_cutoff: 0.0                                                # If best non-forced Q <= this AND draw available, take the draw
+  draw_min_visit_share: 0.25                                      # Draw-line vs best move: each needs >= this share of the leader's visits for Q vs draw_cutoff to decide; else the better-visited one wins
+  resignation_probability: 0.9                                    # Per-game probability resignation is enabled (10% play losses to mate for calibration)
+  resignation_cutoff: -0.80                                       # Q threshold below which resignation-enabled game gives up
+
+training:
+  prefetch_workers: 8                                             # Async LMDB read workers assembling training batches
+  seed: 42                                                        # RNG seed for model init
+  batch_size: 4096                                                # Positions per gradient update
+  calib_batch_size: 128                                           # Batch size for int8 calibration
+  sampling_ratio: 1.0                                             # Gradient updates per position generated (1.0 = strict 1:1 enforced by IO writer)
+  policy_loss_weight: 1.0                                         # Policy CE loss weight
+  value_loss_weight: 1.0                                          # Value CE loss weight
+  weight_decay: 1e-4                                              # L2 regularisation coefficient
+  lr_warmup: 2e-3                                                 # LR at step 0 (linear ramp to lr_high over lr_warmup_steps)
+  lr_warmup_steps: 1000                                           # Warmup duration
+  lr_high: 2e-1                                                   # LR held for lr_high_steps after warmup
+  lr_high_steps: 30000                                            # Duration of high-LR phase
+  lr_mid: 2e-2                                                    # LR held for lr_mid_steps after high phase
+  lr_mid_steps: 60000                                             # Duration of mid-LR phase
+  lr_low: 2e-3                                                    # LR held for remainder of total_training_steps
+  momentum_rate: 0.9                                              # SGD momentum coefficient
+  logging_level: 20                                               # Training loop log level
+
+memory:
+  data_generator_high_gb: 6                                       # talbot_train: soft cap (reclaim starts here)
+  data_generator_max_gb: 8                                        # talbot_train: hard cap (OOM kill above this)
+  trainer_high_gb: 12                                             # main_train.py + AsyncBatchPrefetcher subprocess soft cap (shared)
+  trainer_max_gb: 16                                              # main_train.py + AsyncBatchPrefetcher subprocess hard cap (shared)
+
+core_pinning:
+  inference_worker: [13,14,15]                                    # Dedicated cores for batcher filler/dispatcher/collector threads
+  game_worker: [0,1,2,3,4,5,6,7,16,17,18]                         # Self-play worker cores; total workers = len * workers_per_core
+  data_generator: [12]                                            # Main orchestrator thread (data generator loop, LMDB coordinator)
+  io_writer: [12]                                                 # LMDB writer thread
+  io_reader: [10,11]                                              # Prefetch worker cores for async LMDB reads
+  training: [8,9]                                                 # Python trainer thread (main_train.py + trainer loop)

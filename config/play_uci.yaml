@@ -1,0 +1,63 @@
+engine:
+  log_dir: 'logs'                            # Empty = file logging disabled.
+  log_level: 20                                                   # 10=DEBUG 20=INFO 30=WARNING 40=ERROR 50=CRITICAL
+
+inference:
+  batch_size: 32                                                  # Max batch size during inference
+  batch_size_factor: 32                                           # Multiplier for batch size to determine max slots
+  batch_timeout_ms: 10                                            # How long the GPU batcher waits
+  logging_interval_sec: 10                                        # Interval for system metrics logging
+  logging_level: 20                                               # Logging level for the Batcher Diagnostics
+
+mcts:
+  search: puct                                                    # deficit | halving | puct
+  search_depth: 4000                                              # Fixed node budget when UCI gives no time (and for the first two plies)
+  tree_reuse: true                                                # Reuse the previous move's subtree (deficit/puct; halving always starts fresh)
+  worker_minibatch_size: 128                                       # Max positions sent to the batcher at once
+  virtual_loss: 0.3                                               # Penalty applied to nodes currently being explored
+  contempt: 0.0                                                   # Contempt for playing drawing positions
+  policy_softmax_temp: 1.4                                        # Temperature on the policy logits (prior sharpness)
+  early_stop_q_gap: 0.2                                           # Stop early when the top two root moves differ by this much Q (0 = off)
+  early_stop_min_visits: 100000                                   # Minimum root visits before early stop may trigger
+  early_return_on_forced_win: true                                # Return immediately when a forced win is proven
+  gumbel:                                                         # deficit + halving only
+    c_visit: 50.0                                                 # sigma = (c_visit + min(max_visits, sigma_cap)) * c_scale
+    c_scale: 1.0                                                  # Sigma multiplicative gain
+    sigma_cap: 50.0                                               # Cap on max_visits inside sigma
+    noise: 0.0                                                    # Gumbel noise at the root (0 = deterministic)
+    explore_c: 0.0                                                # Exploration bonus coefficient, same at every depth (0 = none)
+    m: 16                                                         # Root candidates for sequential halving (halving only)
+  puct:                                                           # puct only
+    cpuct: 3.0                                                    # Exploration constant, Q on [-1, 1]
+    fpu_reduction: 0.0                                            # Value for unvisited moves = v_mix - this
+  
+pool_sizing:
+  avg_branching: 35.0                                             # Avg legal moves per chess position
+  node_safety_factor: 4.0                                         # Slack over predicted sims for node count
+  edge_safety_factor: 4.0                                         # Slack over (sims * branching) for edge count
+  node_hard_cap_mb: 6000                                          # Per-worker MCTSNode pool ceiling (~10.4M nodes @ 48B)
+  edge_hard_cap_mb: 6000                                          # Per-worker MCTSEdge pool ceiling (~98M edges @ 16B)
+
+selection:
+  temperature_ply_cutoff: 0                                       # Sample proportional to visit count for first moves
+  temperature_q_decay: 0.2                                        # Absolute Q value [-1, 1] Boltzmann temperature decay
+  draw_cutoff: 0.2                                                # Value threshold to consider a game a draw
+  draw_min_visit_share: 0.25                                      # Draw-line vs best move: each needs >= this share of the leader's visits for Q vs draw_cutoff to decide; else the better-visited one wins
+  resignation_probability: 0.0                                    # Chance the bot checks for resignation allowed
+  resignation_cutoff: 0.0                                         # Value head cutoff for resignation
+
+time_control:
+  move_horizon: 40.0                                              # Assumed moves left when UCI gives no movestogo
+  increment_fraction: 0.90                                        # Fraction of increment folded into the move
+  base_fraction: 0.90                                             # Global scale on base allocation
+  hard_multiplier: 2.0                                            # Hard limit = target * this
+  max_time_fraction: 0.80                                         # Never allocate more than this fraction of remaining time
+  move_overhead_ms: 100                                           # Overridable via UCI MoveOverhead option
+  min_think_ms: 10                                                # Floor so we never emit a 0ms move in time scramble
+  nps_ewma_alpha: 0.40                                            # Smoothing for trailing nodes/sec estimate
+  nps_ewma_default: 20000                                         # Default NPS for first move in non-starting positions
+
+core_pinning:
+  inference_worker: []                                            # Dedicated CPU cores for the Batching Process
+  main: []                                                        # Dedicated CPU cores for the main C++ orchestrator
+  game_worker: []                                                 # Dedicated CPU cores for games
