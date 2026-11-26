@@ -1,0 +1,3697 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://harrisondevane.github.io/talbot/writeup-v1/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Write-up (v1.0) - Talbot</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#talbot-v10-technical-write-up" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Talbot" class="md-header__button md-logo" aria-label="Talbot" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Talbot
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Write-up (v1.0)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/HarrisonDevane/talbot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Talbot" class="md-nav__button md-logo" aria-label="Talbot" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Talbot
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/HarrisonDevane/talbot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Write-up (v1.0)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Write-up (v1.0)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#system-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c-self-play-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C++ self-play engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#python-trainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python trainer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#system-specifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Specifications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inference-batcher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inference Batcher
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inference Batcher">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resource Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#memory-allocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory Allocation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cpu-allocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CPU Allocation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Model Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input-planes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Planes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#residual-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Residual Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output-heads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Heads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#int8-quantisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INT8 Quantisation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tree-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tree Search
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tree Search">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gumbel-mcts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gumbel MCTS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Root selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sequential-halving" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequential halving
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selection-below-the-root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selection below the root
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proven-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proven Outcomes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Proven Outcomes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#terminal-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Terminal Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minimax-proof-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimax Proof Propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mover-has-draw-mhd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mover-Has-Draw (MHD)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-sequential-halving" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interaction with Sequential Halving
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#search-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search Lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#board-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Board State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nodeedge-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node/Edge Split
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#virtual-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Virtual Loss
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Selection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Action Selection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#non-deterministic-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Deterministic Selection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Non-Deterministic Selection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Work
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-worked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Worked
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-the-lcb-not-raw-q" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the LCB, Not Raw Q
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#behaviour-across-positions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Behaviour Across Positions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#temperature-cutoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Temperature Cutoff
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy-and-value-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy and Value Targets
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Policy and Value Targets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#value-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Value Target
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy Target
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Policy Target">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v_mix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v_mix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#k-shrinkage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        K-Shrinkage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-it-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What It Does
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#effect-on-the-policy-improvement-guarantee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Effect on the Policy-Improvement Guarantee
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proven-outcomes-in-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proven Outcomes in Targets
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-at-inference-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search at Inference Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Training">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#loss-and-optimiser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loss and Optimiser
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replay-buffer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replay Buffer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sampling-ratio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sampling Ratio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Loading
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Evaluation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#elo-methodology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Elo Methodology
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Benchmark
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lichess" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lichess
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internal-progression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Internal Progression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#system-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Results
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System Results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#comparison-across-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison across runs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ablations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ablations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ablations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#action-selection_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action selection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Action selection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#opening-diversity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opening diversity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strength" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strength
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#int8-inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INT8 inference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INT8 inference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Speed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strength_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strength
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#which-precision-each-result-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which precision each result used
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Discussion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#self-play-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-play Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Self-play Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-pins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 1: Pins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-discovered-attack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 2: Discovered attack
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison-with-existing-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison with existing work
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Comparison with existing work">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alphazero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AlphaZero
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leela-chess-zero-test10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leela Chess Zero (test10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#engineering-efficient-self-play-chess-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engineering Efficient Self-Play Chess (2026)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-engines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other Engines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future work
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Future work">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#training_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inference
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#system-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c-self-play-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C++ self-play engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#python-trainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python trainer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#system-specifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Specifications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inference-batcher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inference Batcher
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inference Batcher">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resource Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#memory-allocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory Allocation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cpu-allocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CPU Allocation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Model Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input-planes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Planes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#residual-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Residual Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output-heads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Heads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#int8-quantisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INT8 Quantisation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tree-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tree Search
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tree Search">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gumbel-mcts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gumbel MCTS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Root selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sequential-halving" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequential halving
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selection-below-the-root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selection below the root
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proven-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proven Outcomes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Proven Outcomes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#terminal-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Terminal Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minimax-proof-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimax Proof Propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mover-has-draw-mhd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mover-Has-Draw (MHD)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interaction-with-sequential-halving" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interaction with Sequential Halving
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#search-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search Lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#board-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Board State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nodeedge-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node/Edge Split
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#virtual-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Virtual Loss
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Selection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Action Selection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#non-deterministic-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Deterministic Selection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Non-Deterministic Selection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Work
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-worked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Worked
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-the-lcb-not-raw-q" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the LCB, Not Raw Q
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#behaviour-across-positions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Behaviour Across Positions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#temperature-cutoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Temperature Cutoff
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy-and-value-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy and Value Targets
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Policy and Value Targets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#value-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Value Target
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy Target
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Policy Target">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v_mix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v_mix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#k-shrinkage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        K-Shrinkage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-it-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What It Does
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#effect-on-the-policy-improvement-guarantee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Effect on the Policy-Improvement Guarantee
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proven-outcomes-in-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proven Outcomes in Targets
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-at-inference-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search at Inference Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Training">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#loss-and-optimiser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loss and Optimiser
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replay-buffer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replay Buffer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sampling-ratio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sampling Ratio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Loading
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Evaluation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#elo-methodology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Elo Methodology
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Benchmark
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lichess" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lichess
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#internal-progression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Internal Progression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#system-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Results
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System Results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#comparison-across-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison across runs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ablations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ablations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ablations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#action-selection_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action selection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Action selection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#opening-diversity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opening diversity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strength" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strength
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#int8-inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INT8 inference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INT8 inference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Speed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strength_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strength
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#which-precision-each-result-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which precision each result used
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discussion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discussion
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Discussion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#self-play-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-play Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Self-play Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-pins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 1: Pins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-discovered-attack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 2: Discovered attack
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comparison-with-existing-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison with existing work
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Comparison with existing work">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alphazero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AlphaZero
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leela-chess-zero-test10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leela Chess Zero (test10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#engineering-efficient-self-play-chess-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engineering Efficient Self-Play Chess (2026)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-engines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other Engines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future work
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Future work">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#training_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inference
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="talbot-v10-technical-write-up">Talbot v1.0 Technical Write-up<a class="headerlink" href="#talbot-v10-technical-write-up" title="Permanent link">&para;</a></h1>
+<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
+<p>Talbot is a chess engine trained entirely from self-play (tabula rasa) on a single machine with one consumer GPU, an NVIDIA RTX 5060 Ti. The aim was efficiency, to find how strong an AlphaZero-style engine can get when every part of the pipeline is built to make the most of limited hardware.</p>
+<p>The system has two long-running processes. A C++ self-play engine generates games using Gumbel MCTS at 128 simulations per move, and a Python trainer learns from them. They communicate through a shared LMDB database. Self-play inference runs through TensorRT behind a pipelined batcher that keeps the GPU close to fully used. The search adds exact handling of proven wins and draws, and training targets and move sampling are adjusted for the low simulation budget.</p>
+<p>The final 10×128 network trained for 95.8 hours, over roughly 4.8 million self-play games. In a 1000-game gauntlet against ten CCRL-rated engines, it scored an estimated 3246 ± 14 Elo on the CCRL Blitz scale, with network evaluation on the RTX 5060 Ti. This is an estimate under my hardware and time control, not an official rating. Total self-play compute was about 2×10¹⁹ operations, which is ~400~ less than AlphaZero, and ~3.5-4× less than the nearest published single-machine run I found, which used eight GPUs. Strengths are measured on different scales, so this comparison is approximate.</p>
+<p>Talbot is primarily an engineering project. Some components, such as target shrinkage, were chosen based on observations from early runs and were not ablated. Results reflect the system as a whole, not the contribution of any single change.</p>
+<p>The write-up covers the system architecture and resource management first, then the network, search, action selection and training targets. It ends with evaluation, a discussion of tactical blind spots in self-play, a comparison with existing work, and future work.</p>
+<h2 id="system">System<a class="headerlink" href="#system" title="Permanent link">&para;</a></h2>
+<h3 id="system-architecture">System Architecture<a class="headerlink" href="#system-architecture" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="../img/media/fig01_system_architecture.png" /></p>
+<p><em>Figure 1. System architecture: the C++ self-play engine and Python trainer, communicating through a shared LMDB.</em></p>
+<p>Talbot is a single-machine reinforcement learning system built around two long-running processes: a C++ self-play engine and a Python trainer, communicating through a shared Lightning Memory-Mapped Database (LMDB). Self-play writes positions to the database, and the trainer reads them out for training. Control signals for model updates pass through the same database. A third, short-lived C++ process, the TensorRT Builder, is launched once per model update to compile the new network.</p>
+<h4 id="c-self-play-engine">C++ self-play engine<a class="headerlink" href="#c-self-play-engine" title="Permanent link">&para;</a></h4>
+<p>The self-play engine has four primary components:</p>
+<ul>
+<li>
+<p><strong>Data Generator</strong>. Owns the pool of game workers.</p>
+</li>
+<li>
+<p><strong>Game Workers</strong>. Each worker plays one game at a time. Workers are pinned to cores, with the option to pin multiple workers per core. Each worker owns three subcomponents:</p>
+<ul>
+<li>
+<p>The MCTS Engine holds the search tree, the node pool, and the worker's connection to the inference pipeline.</p>
+</li>
+<li>
+<p>The Action Selector applies a move selection hierarchy on the finished search tree.</p>
+</li>
+<li>
+<p>The Target Generator constructs the policy and value training targets from the search results before the move is played.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Inference Batcher</strong>. Collects position evaluation requests from all workers through a single shared lock-free queue, groups them into GPU batches, and returns each result to the worker's result queue.</p>
+</li>
+<li>
+<p><strong>IO Writer</strong>. Receives finished games from workers through a separate queue, buffers them in memory, and writes compressed positions to the LMDB in fixed-size batches.</p>
+</li>
+</ul>
+<h4 id="python-trainer">Python trainer<a class="headerlink" href="#python-trainer" title="Permanent link">&para;</a></h4>
+<p>The Orchestrator, a Python script, launches the C++ engine as a subprocess, sets up the Trainer, and runs the training loop. The Trainer owns the model and the optimiser. Prefetch workers on dedicated cores read positions from the LMDB and assemble batches for training.</p>
+<h4 id="model-updates">Model updates<a class="headerlink" href="#model-updates" title="Permanent link">&para;</a></h4>
+<p>The model used for data generation is replaced at a fixed training-step interval rather than continuously hot-swapped. During each update, both processes stop, the new network is compiled and loaded, and both resume. In detail:</p>
+<ol>
+<li>
+<p>Halt. The Orchestrator pauses the Trainer and increments __TRT_HALT_SIGNAL.</p>
+</li>
+<li>
+<p>Drain. On seeing the halt signal, the C++ engine signals the Inference Batcher to pause. The Batcher stops accepting new batches and finishes those already in flight. Game workers then stall waiting for results, so self-play stops without the workers being paused explicitly.</p>
+</li>
+<li>
+<p>Export. The Orchestrator exports the model to ONNX and sets __TRT_EXPORT_SIGNAL in the LMDB.</p>
+</li>
+<li>
+<p>Build. The C++ engine sees the signal and launches the TensorRT Builder. The Builder compiles the new engine and writes it to disk.</p>
+</li>
+<li>
+<p>Reload. The C++ engine reads the finished engine from disk and hands it to the Inference Batcher. The Batcher loads it and resumes, and self-play continues.</p>
+</li>
+<li>
+<p>Resume. The C++ engine writes the export count to __TRT_ENGINE_READY. The Orchestrator sees it and resumes training.</p>
+</li>
+</ol>
+<p>On startup, if the export count exceeds the ready step, the C++ engine builds the engine before starting any workers.</p>
+<p>For Talbot, the update interval was set to 1000 training steps. The pipeline drains in under 10 ms, and a persisted TensorRT timing cache keeps rebuilds short: each update pauses self-play for roughly 15-30 s depending on network size. This represents under 1% of total run time.</p>
+<h4 id="persistence">Persistence<a class="headerlink" href="#persistence" title="Permanent link">&para;</a></h4>
+<p>Training progress (__PY_STATE), self-play progress (__CPP_STATE) and the replay buffer all live in the LMDB. Model checkpoints are saved to disk alongside it. A run can be stopped and resumed at any point. Only games in progress and positions not yet flushed by the IO Writer are lost.</p>
+<h3 id="system-specifications">System Specifications<a class="headerlink" href="#system-specifications" title="Permanent link">&para;</a></h3>
+<p>Hardware:</p>
+<ul>
+<li>
+<p>CPU: AMD Ryzen 9 5950X</p>
+</li>
+<li>
+<p>Memory: 32 GB DDR4-3200</p>
+</li>
+<li>
+<p>GPU: NVIDIA GeForce RTX 5060 Ti (16 GB VRAM, driver 615.71.09)</p>
+</li>
+<li>
+<p>Storage: 256 GB Intel NVMe SSD (OS), 512 GB Samsung 960 EVO NVMe SSD (training data, LMDB, checkpoints).</p>
+</li>
+<li>
+<p>OS: Ubuntu 26.04 (kernel 7.0.0-30-generic).</p>
+</li>
+</ul>
+<p>Core software stack:</p>
+<ul>
+<li>
+<p>CUDA 13.3 (V13.3.73)</p>
+</li>
+<li>
+<p>cuDNN 9.24.0</p>
+</li>
+<li>
+<p>TensorRT 11.3.0</p>
+</li>
+<li>
+<p>LibTorch 2.14.0 (cu132)</p>
+</li>
+<li>
+<p>LMDB 2.3.0</p>
+</li>
+<li>
+<p>Python 3.14.4</p>
+</li>
+</ul>
+<h3 id="inference-batcher">Inference Batcher<a class="headerlink" href="#inference-batcher" title="Permanent link">&para;</a></h3>
+<p>The Inference Batcher is the only self-play component that interacts with the GPU. Self-play workers each produce a small number of position evaluations, but a GPU is efficient only at large batch sizes. The batcher gathers requests from all workers into large batches, runs them through TensorRT, and returns each result to the worker that requested evaluation.</p>
+<h4 id="request-path">Request path<a class="headerlink" href="#request-path" title="Permanent link">&para;</a></h4>
+<p>Workers exchange data with the batcher through pre-allocated shared buffers, rather than queues containing full board data:</p>
+<ul>
+<li>
+<p>A worker claims a free buffer slot, writes its encoded position into it in FP16, and pushes a worker ID, slot pair onto the lock-free queue shared by all workers.</p>
+</li>
+<li>
+<p>When the result is ready, the batcher writes the policy and value outputs back into the same slot. It then notifies the worker through that worker's own result queue, sending one message per batch that lists all of the worker's completed slots.</p>
+</li>
+<li>
+<p>The number of buffer slots caps how many requests can be outstanding. When the pool runs out, workers wait for a slot, which gives natural backpressure.</p>
+</li>
+</ul>
+<h4 id="pipeline">Pipeline<a class="headerlink" href="#pipeline" title="Permanent link">&para;</a></h4>
+<p>Inside the batcher, three threads work through three batch slots in rotation. Each slot has its own CUDA stream and its own TensorRT execution context:</p>
+<ul>
+<li>
+<p><strong>Filler</strong> takes requests off the shared queue and copies their positions into host memory.</p>
+</li>
+<li>
+<p><strong>Dispatcher</strong> queues all of the batch's GPU work on that slot's stream asynchronously.</p>
+</li>
+<li>
+<p><strong>Collector</strong> waits for a slot's stream to finish and sends the results to the workers.</p>
+</li>
+</ul>
+<p>Because each slot has its own stream and context, up to three batches can be in progress at once. One can be filling, while two are on the GPU, so CPU and GPU transfers overlap with inference. All three threads run on dedicated cores and busy-wait rather than sleeping, minimising wake-up latency.</p>
+<p>A batch is sent when it's full, or when no new requests arrive within a timeout. Before inference, the batch is zero-padded up to the next fixed size step, limiting the engine to a few distinct batch shapes.</p>
+<p>When a model update begins, the Filler stops starting new batches, and the batcher counts itself paused once every slot is free and nothing is waiting to be dispatched. Once the new engine is built, the batcher synchronises the GPU, destroys the old engine and its execution contexts, loads the new engine, creates three new contexts and resumes.</p>
+<p><img alt="" src="../img/media/fig02_inference_batcher.png" /></p>
+<p><em>Figure 2. Inference Batcher pipeline: Filler, Dispatcher and Collector threads rotating through three batch slots.</em></p>
+<p>For all runs, each worker submitted evaluations in groups of four, with a batch size of 128. Batch sizes were compared by measured self-play throughput, and 128 performed best for all network sizes tested. Because outstanding requests far exceed one batch, every batch fills immediately: across all network sizes, batches are consistently full and the Filler is almost never idle. The 10 ms timeout and the padding to multiples of 64 therefore matter only when demand is low, as at the start of a run.</p>
+<h3 id="resource-management">Resource Management<a class="headerlink" href="#resource-management" title="Permanent link">&para;</a></h3>
+<h4 id="memory-allocation">Memory Allocation<a class="headerlink" href="#memory-allocation" title="Permanent link">&para;</a></h4>
+<p>The trainer and the self-play engine each run in their own cgroup. Each group has a soft limit (memory high), above which the kernel reclaims the group's memory, and a hard limit (memory max). The Orchestrator launches the C++ engine into its group, so the TensorRT Builder, as a child process of the engine, runs under the same limits.</p>
+<p>The two processes use memory differently:</p>
+<ul>
+<li>
+<p>Self-play memory is mostly fixed. Node and edge pools are pre-allocated per worker per move, so usage stays flat apart from spikes during engine rebuilds.</p>
+</li>
+<li>
+<p>The trainer's process memory is also fixed (model, optimiser state and prefetch buffers), but it reads the replay buffer through LMDB's memory map. Its page cache therefore grows as more of the buffer is read. Once the buffer is larger than the trainer's limit, the kernel evicts cached pages to stay under the limit, and further reads go to disk.</p>
+</li>
+</ul>
+<p>For all runs, the soft and hard limits were 12 GB and 16 GB for the trainer, and 6 GB and 8 GB for self-play, on a 32 GB machine.</p>
+<h4 id="cpu-allocation">CPU Allocation<a class="headerlink" href="#cpu-allocation" title="Permanent link">&para;</a></h4>
+<p>Every component is pinned to its own set of CPU cores, so no two components compete for the same core:</p>
+<ul>
+<li>
+<p>Game workers are spread across a dedicated block of cores. Several workers can share one core.</p>
+</li>
+<li>
+<p>The Inference Batcher's three threads get their own cores, shared out round-robin among the Filler, Dispatcher and Collector.</p>
+</li>
+<li>
+<p>The IO Writer and the C++ main thread each get their own cores.</p>
+</li>
+<li>
+<p>The trainer is pinned to its own cores once it has launched the C++ engine. The prefetch workers run on separate dedicated cores.</p>
+</li>
+</ul>
+<h2 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h2>
+<h3 id="model-architecture">Model Architecture<a class="headerlink" href="#model-architecture" title="Permanent link">&para;</a></h3>
+<p>The network is a residual network (ResNet) [6] with Squeeze-and-Excitation (SE) [7] - the same family AlphaZero and early Leela used. Modern Leela uses transformers, which are stronger but more expensive to train and evaluate. Given the focus on self-play throughput on one machine, Talbot uses a ResNet.</p>
+<h4 id="input-planes">Input Planes<a class="headerlink" href="#input-planes" title="Permanent link">&para;</a></h4>
+<p>The input follows the AlphaZero layout. It contains 111 input planes encoding the current position and 7 previous plies. Each position contains 12 piece planes, a repetition flag, followed by seven planes of metadata for the current position. Everything is encoded from the side to move's perspective. Talbot differs from AlphaZero in three ways:</p>
+<ul>
+<li>
+<p>It uses one repetition plane per position rather than two. This is because search labels a twofold repetition as a draw, so the network only needs to know whether a position has occurred before.</p>
+</li>
+<li>
+<p>It has an en passant plane, with the whole file filled, in place of the move-count plane.</p>
+</li>
+<li>
+<p>Missing history at the start of a game is left as zeros rather than padded.</p>
+</li>
+</ul>
+<p>The board is flipped vertically so the side to move's pieces are always on the same edge. Files are never mirrored, so the kingside is on the right for both colours.</p>
+<h4 id="residual-stack">Residual Stack<a class="headerlink" href="#residual-stack" title="Permanent link">&para;</a></h4>
+<p>A 3x3 convolution projects the input to the network's channel width, followed by a stack of residual blocks. Each block applies two 3x3 convolutions with batch norm, then a Leela-style SE layer before the skip connection:</p>
+<ul>
+<li>
+<p>The block's output is averaged to one value per channel.</p>
+</li>
+<li>
+<p>That passes through a small two-layer MLP.</p>
+</li>
+<li>
+<p>The result is split into a per-channel scale (sigmoid) and a per-channel bias, applied as out times scale plus bias.</p>
+</li>
+</ul>
+<p>Classic SE only rescales channels. The added bias lets each block shift its activations based on the whole board, which gives cheap global context without attention.</p>
+<h4 id="output-heads">Output Heads<a class="headerlink" href="#output-heads" title="Permanent link">&para;</a></h4>
+<p>The network has two output heads: a policy head and a value head:</p>
+<ul>
+<li>
+<p>The policy head is fully convolutional. A 3x3 convolution at full width is followed by a second 3x3 convolution down to 73 planes, one per move type in the AlphaZero encoding. Flattening the 73x8x8 output gives the 4,672 move logits directly, indexed by from-square and move type, with no fully connected layer. Illegal moves are masked before the softmax in the loss and in search.</p>
+</li>
+<li>
+<p>The value head reduces the backbone with a 1x1 convolution, then uses two fully connected layers to produce a softmax over win, draw and loss (WDL). WDL lets the network tell a dead-drawn position from a sharp, balanced one, which a scalar value of 0 cannot. This categorical output provides a richer learning signal, and also makes contempt possible during inference.</p>
+</li>
+</ul>
+<h4 id="int8-quantisation">INT8 Quantisation<a class="headerlink" href="#int8-quantisation" title="Permanent link">&para;</a></h4>
+<p>Self-play inference runs in INT8, apart from the final policy convolution and the value head.</p>
+<ul>
+<li>At each model update, the exported network goes through static post-training quantisation. Weights and activations are quantised symmetrically, with per-channel scales for the weights.</li>
+<li>Activation ranges are calibrated with MinMax on one training batch (4,096 positions) sampled from the replay buffer. Calibration reruns at every update, so the ranges follow the network as it trains, and it runs inside the update pause. MinMax was chosen because it is the fastest of the methods tried.</li>
+<li>The final policy convolution and the whole value head are excluded from quantisation, because their outputs feed search and the training targets directly. The network is exported with FP32 internals for the quantiser, so these excluded layers run in FP32. Input and output are FP16.</li>
+<li>The initial random network is exported in FP16, since there are no positions to calibrate on yet. The first rebuild comes after only a few training steps, so self-play switches to INT8 almost immediately.</li>
+</ul>
+<p>The speed and strength effects of INT8 are measured in <a href="#int8-inference">Ablations: INT8 inference</a>.</p>
+<h3 id="tree-search">Tree Search<a class="headerlink" href="#tree-search" title="Permanent link">&para;</a></h3>
+<p>Before every move in a self-play game, the engine runs a full Monte Carlo Tree Search (MCTS). MCTS builds a search tree rooted at the current position, using the neural network to evaluate leaf nodes and guide exploration towards promising lines. Once the search finishes, each child of the root carries visit counts, Q values, Gumbel scores and proven-outcome information. The tree is passed to the Action Selector to choose a move, and to the Target Generator to build the policy training target.</p>
+<h4 id="gumbel-mcts">Gumbel MCTS<a class="headerlink" href="#gumbel-mcts" title="Permanent link">&para;</a></h4>
+<p>AlphaZero selects nodes with PUCT, a UCB-style formula that balances exploiting high-value nodes against exploring high-prior nodes. PUCT works well with a large simulation budget. With few simulations, though, its visit-count statistics are noisy, and it offers no guarantee of improving on the network's own policy. For a single-machine engine with a small budget per move, that is a real limitation. The engine instead uses Gumbel MCTS [2] which guarantees policy improvement with respect to its value estimates even at very low simulation counts.</p>
+<h4 id="root-selection">Root selection<a class="headerlink" href="#root-selection" title="Permanent link">&para;</a></h4>
+<p>Each search starts by evaluating the root, which gives the prior logits and a WDL estimate for the position. Every legal move is then checked for a terminal state. Gumbel noise is sampled and added directly to the raw prior logits, and the top <em>m</em> non-terminal moves by this noisy score become the candidates. AlphaZero instead applies Dirichlet noise to the prior probabilities after the softmax. Because the noise is added to the logits, low-prior moves occasionally make the candidate set, which keeps self-play exploring.</p>
+<h4 id="sequential-halving">Sequential halving<a class="headerlink" href="#sequential-halving" title="Permanent link">&para;</a></h4>
+<p>The simulation budget is split into log₂(<em>m</em>) phases:</p>
+<ul>
+<li>
+<p>In each phase, simulations go round-robin across the surviving candidates.</p>
+</li>
+<li>
+<p>At the end of each phase, Gumbel scores are recomputed using the accumulated Q values, and the bottom half of the candidates is eliminated.</p>
+</li>
+<li>
+<p>In the final phase, the budget goes to the last two candidates, and the one with the higher Gumbel score is selected.</p>
+</li>
+</ul>
+<h4 id="selection-below-the-root">Selection below the root<a class="headerlink" href="#selection-below-the-root" title="Permanent link">&para;</a></h4>
+<p>Inside the tree, the engine uses a deficit-based selection rule. At each node, every child gets a score: its raw policy logit plus a Q term scaled by a visit-count-dependent σ. A softmax over these scores gives each child a target share of the visits, and the engine descends into the child whose actual share falls furthest below its target. This steers the search towards children that are under-visited relative to their scores. Children with proven outcomes, or that are otherwise unavailable, are skipped.</p>
+<p>For all runs, self-play used 128 simulations per move with <em>m</em> = 16 candidates, giving four phases of 32 simulations each.</p>
+<p><img alt="" src="../img/media/fig03_sequential_halving.png" /></p>
+<p><em>Figure 3. Gumbel MCTS with sequential halving: 128 simulations, m = 16 candidates, four phases.</em></p>
+<h3 id="proven-outcomes">Proven Outcomes<a class="headerlink" href="#proven-outcomes" title="Permanent link">&para;</a></h3>
+<p>Pure visit-averaged MCTS handles exact results badly. Suppose one child of a node is a forced win, but its siblings average out negative on network evaluations. The parent's visit-weighted Q is dragged down by the losing lines, even though the mover would simply play the winning move and never enter them. Selection based on averaged Q therefore undervalues the winning line. Draws have the same problem: a single drawn result found deep in the tree is averaged away among network estimates. The engine handles exact results with two mechanisms on top of standard MCTS: minimax proof propagation and mover-has-draw.</p>
+<h4 id="terminal-nodes">Terminal Nodes<a class="headerlink" href="#terminal-nodes" title="Permanent link">&para;</a></h4>
+<p>Checkmate, stalemate, the 50-move rule and repetition are recognised as soon as they're reached. Search scores a twofold repetition as a draw. A terminal node gets an exact outcome immediately and is marked unavailable. It's visited only once, because its value is exact and there's nothing to learn from evaluating it again. Non-terminal nodes, by contrast, only become proven when search proves their subtree, through the rules below.</p>
+<h4 id="minimax-proof-propagation">Minimax Proof Propagation<a class="headerlink" href="#minimax-proof-propagation" title="Permanent link">&para;</a></h4>
+<p>Each node carries a forced outcome flag (unset, win, loss or draw), along with distance to mate for proven wins and losses. A minimax pass at every backpropagation step updates the flag using the following rules, in strict priority order:</p>
+<ol>
+<li>
+<p><strong>Forced win.</strong> If any child is a proven loss for its own mover, meaning a proven win for the parent's mover, the node is a forced win. Distance-to-mate is the minimum over winning children plus one: the mover picks the fastest mate.</p>
+</li>
+<li>
+<p><strong>Forced loss.</strong> If every child is a forced win for its own mover, so every move loses, the node is a forced loss. Distance-to-mate is the maximum over the children plus one: the mover delays mate as long as possible.</p>
+</li>
+<li>
+<p><strong>Forced draw.</strong> If all children are proven, none wins, and at least one is a proven draw, the node is a forced draw. The mover takes the draw over any losing alternative.</p>
+</li>
+<li>
+<p><strong>Unresolved.</strong> If any child is unproven, the node stays unresolved, and its value falls back to the visit-averaged Q.</p>
+</li>
+</ol>
+<p>A forced win takes priority, since a winning move dominates whatever else is available. Once a node is proven, the flag is treated as final and later passes skip it. A newly proven node can in turn prove its parent. It's also marked unavailable, and that propagates upwards through the availability counters, so selection stops entering proven subtrees. The value function expected value respects the flags: proven wins return +1, proven losses −1 and proven draws 0, replacing the averaged Q.</p>
+<h4 id="mover-has-draw-mhd">Mover-Has-Draw (MHD)<a class="headerlink" href="#mover-has-draw-mhd" title="Permanent link">&para;</a></h4>
+<p>Minimax proves a draw only once a subtree is fully explored, which in practice rarely happens within one search outside simple endgames. Most drawn lines are found at a single leaf, such as a repetition, 50-move draw or stalemate, inside a subtree whose other branches are unresolved. Under visit-averaging, that leaf adds one visit's worth of 0.0 to its ancestors' Q, and the signal is diluted by the network estimates around it. Revisiting the drawn leaf repeatedly to build up its weight doesn't work either. When the drawn leaf is the only option not already waiting on inference, search re-simulates it over and over without ever going to the GPU, which corrupts the search.</p>
+<p>Instead, every node carries a mover-has-draw flag, set during backpropagation by either of two rules:</p>
+<ol>
+<li>
+<p><strong>Principal-variation rule.</strong> The node's best child by Q, from the mover's perspective, is a proven draw or itself has mover-has-draw set. The flag therefore climbs the current best line: if the mover currently prefers a line that leads to a draw, the node is marked.</p>
+</li>
+<li>
+<p><strong>No-escape rule.</strong> Every child the mover might actually play, meaning every child not proven lost, is a proven draw or has mover-has-draw set. The mover can do no better than a draw here, whatever the Q values say.</p>
+</li>
+</ol>
+<p>Both rules are re-evaluated on every backpropagation, so the flag is not monotonic. It clears if the best line moves away from the draw, and can be set late when the no-escape rule finally applies. Expected value returns exactly 0.0 for a flagged node. Selection, target generation, principal-variation extraction and every other consumer of Q inherit this automatically, so ancestors see the drawn line's value immediately, after a single backpropagation.</p>
+<p>The two mechanisms cover different stages of a search. Mover-has-draw responds as soon as one drawn leaf is found, and minimax takes over once a subtree is fully proven. The trade-off is that mover-has-draw depends on Q through the principal-variation rule, so it can flip back and forth when sibling Q values sit close to 0. That reflects genuine uncertainty about whether the draw is the best line, but it means the flag is a search heuristic (not a proof). Code that needs certainty reads forced outcome; code that wants the best available value reads expected value, which combines both.</p>
+<h4 id="interaction-with-sequential-halving">Interaction with Sequential Halving<a class="headerlink" href="#interaction-with-sequential-halving" title="Permanent link">&para;</a></h4>
+<p>When a root candidate becomes proven during a phase, it's removed from the candidate set immediately, and the rest of that phase's simulations are shared among the survivors. Proven candidates are also removed before each halving step. As a result, visit counts across root children end up uneven, which is not the clean pattern sequential halving produces in the ideal case. The Action Selector accounts for this, since it doesn't choose moves on visit counts alone.</p>
+<h3 id="implementation">Implementation<a class="headerlink" href="#implementation" title="Permanent link">&para;</a></h3>
+<h4 id="search-lifecycle">Search Lifecycle<a class="headerlink" href="#search-lifecycle" title="Permanent link">&para;</a></h4>
+<p>Each game worker owns one persistent MCTS engine. At the start of every move, the engine resets: the node pool is rewound, the root is reallocated, and any in-flight inference requests are drained. Trees are not reused between moves during self-play.</p>
+<h4 id="board-state">Board State<a class="headerlink" href="#board-state" title="Permanent link">&para;</a></h4>
+<p>Each worker keeps a single board for its whole lifetime. Positions aren't copied into nodes. Instead, the engine makes moves on the board as it descends the tree and unmakes them on the way back up. The history planes for the network input are rebuilt by walking back along the current simulation path, rather than stored with each node.</p>
+<h4 id="nodeedge-split">Node/Edge Split<a class="headerlink" href="#nodeedge-split" title="Permanent link">&para;</a></h4>
+<p>A full search node holds visit counts, WDL sums, cached Q, proof flags, distance-to-mate, availability counters, mover-has-draw, virtual loss and a parent pointer, which comes to 56 bytes. If every legal move got a full node on expansion, most of that memory would go to moves that are never visited. The engine therefore splits the data into two types:</p>
+<ul>
+<li>
+<p>An edge (24 bytes) holds the move, its prior logit and a pointer to its child node, which starts out null.</p>
+</li>
+<li>
+<p>A node (56 bytes) holds the search state. It is allocated only when selection first goes down that edge.</p>
+</li>
+</ul>
+<p>Expanding a position allocates one contiguous block of edges and no nodes. An unvisited move costs 24 bytes; a visited one costs 80. Nodes and edges live in separate pre-allocated arrays, each managed by a per-worker bump allocator. Because most moves are never visited, edges far outnumber nodes, and the tree takes a fraction of the memory a node-per-move layout would. This matters at inference time, when longer searches and several concurrent games all have to fit in system RAM.</p>
+<h4 id="virtual-loss">Virtual Loss<a class="headerlink" href="#virtual-loss" title="Permanent link">&para;</a></h4>
+<p>Each worker selects a mini-batch of leaves before any of their results return. Without a correction, the deterministic selection rule would pick the same path every time within a mini-batch. So when a leaf is queued for inference, a virtual loss is applied along its path to the root. That makes the path look temporarily worse, and the next selections go elsewhere. When the result arrives, the virtual loss is removed before the real value is backpropagated.</p>
+<p>For all runs, workers submitted mini-batches of four leaves, with a virtual loss of 0.3. During tournament play, workers submit mini-batches of 128.</p>
+<h3 id="action-selection">Action Selection<a class="headerlink" href="#action-selection" title="Permanent link">&para;</a></h3>
+<p>Once the search completes, the populated tree is passed to the Action Selector. Moves are chosen by a strict priority hierarchy: proven and draw cases are handled first, and only if none applies does the selector fall through to sampling.</p>
+<ol>
+<li>
+<p><strong>Forced win.</strong> If any child is a proven win, play the shortest mate. Ties are broken randomly.</p>
+</li>
+<li>
+<p><strong>Forced draw.</strong> If a proven draw is available and the best unproven move's Q is at or below the draw cutoff of 0.0, take the draw.</p>
+</li>
+<li>
+<p><strong>Mover-has-draw.</strong> If a child carries the mover-has-draw flag, compare the most-visited flagged move against the best unproven move. If both have enough visits relative to the leader, value decides: play the draw if the best unproven Q is at or below the draw cutoff. If only one has enough visit support, play that one. If no unproven alternative exists, play the draw.</p>
+</li>
+<li>
+<p><strong>Resignation.</strong> If resignation is enabled for this game, an unproven move exists, and the best Q is below −0.80, resign.</p>
+</li>
+<li>
+<p><strong>Sampling or deterministic play.</strong> If unproven moves exist, then for the first 30 plies, sample a move by visit count, filtered by Q (below). After ply 30, play deterministically.</p>
+</li>
+<li>
+<p><strong>Delay mate.</strong> If no unproven move is left and every remaining move is a proven loss, play the move with the longest distance to mate.</p>
+</li>
+</ol>
+<p><img alt="" src="../img/media/fig04_action_selection.png" /></p>
+<p><em>Figure 4. Action selection priority hierarchy.</em></p>
+<p>The forced-win rule plays the shortest available mate rather than any winning move. The draw rules apply only when a draw is genuinely the best option: if the engine is winning, an available draw doesn't trigger them. Mover-has-draw also requires visit support, so a lightly searched flag can't override a well-searched alternative. Moves flagged mover-has-draw are never chosen by sampling. Resignation is enabled at random per game: 90% of self-play games allow it, and 10% play losing positions out to mate, so the network still sees what a lost position looks like all the way to the end. Resignation also never triggers in a proven loss; those games are played out to mate.</p>
+<h4 id="non-deterministic-selection">Non-Deterministic Selection<a class="headerlink" href="#non-deterministic-selection" title="Permanent link">&para;</a></h4>
+<p>For positions that reach rule 5, how the move is chosen matters a great deal for training. The Gumbel MuZero paper [2] presents Gumbel noise as providing enough exploration on its own. Its ablations, however, note that "during training, MuZero and Gumbel MuZero benefit from explorative acting proportional to the visit counts," which is in tension with that. The paper does not describe how to act during training to get enough diversity, so the mechanism here was arrived at empirically.</p>
+<h5 id="what-didnt-work">What Didn't Work<a class="headerlink" href="#what-didnt-work" title="Permanent link">&para;</a></h5>
+<p>The most natural reading of the paper is to play the argmax of the root Gumbel score after search. With the c_visit and c_scale values from DeepMind's settings (50.0 and 1.0 respectively), the Q term in the Gumbel score is large relative to the noise. The noise is effectively swamped by the prior and the Q signal, so once the network prefers a move, it is selected game after game. In early runs this appeared to overfit the network to a narrow set of opening lines within tens of thousands of games. A later ablation in the final system (see Ablations) found a milder version of the same effect - argmax selection does not fully collapse, but it concentrates the opening heavily.</p>
+<p>Sampling directly from the Gumbel scores as a probability distribution also failed. Because the score includes the raw prior logits, high-prior moves are selected more often, receive more visits and produce stronger policy targets. That raises their logits, which raises their Gumbel scores in turn. This feedback loop is most damaging in the opening, where the network is most prone to overfitting. Applying a temperature to the Gumbel scores before the softmax flattens the distribution but doesn't remove the problem, because the prior is still built into the scores.</p>
+<p>The fix the paper implies, sampling in proportion to visit counts, doesn't solve the core problem either. Sequential halving produces the same visit distribution however confident the search actually is. The budget is split across log₂(m) phases, and candidates accumulate visits according to the halving schedule, not according to how much better one move is than another. In a position where one move is clearly winning and every other is a blunder, the two candidates that survive halving have identical visit counts and are sampled with equal probability. The visit distribution itself carries no confidence signal.</p>
+<h5 id="what-worked">What Worked<a class="headerlink" href="#what-worked" title="Permanent link">&para;</a></h5>
+<p>The final mechanism samples from a visit-count distribution filtered by a lower-confidence-bound (LCB) Q value. Visit counts are the base weight rather than Gumbel scores, because they're independent of the prior, therefore a move accumulates visits based on what the search actually found instead of what the network initially thought. Only unproven, unflagged children with at least one visit are eligible. Each move's weight is:</p>
+<div class="arithmatex">\[
+w(a) = N(a)\,\exp\!\left(-\frac{q_{\text{drop}}(a)}{T}\right)
+\]</div>
+<p>where q_drop(a) = max over b of q̃(b), minus q̃(a), which is never negative, and q̃ is a confidence-adjusted value rather than the raw Q:</p>
+<div class="arithmatex">\[
+\tilde{q}(a) = Q(a) - \frac{\sigma(a)}{\sqrt{N(a)}}
+\]</div>
+<p>Q(a) is the child's search value from the mover's perspective. σ(a) is the standard deviation of the search-averaged outcome at that node, with σ² = (p_w + p_l) − (p_w − p_l)², computed from the visit-averaged win and loss shares. The σ/√N term is the standard error the estimate would have if each visit were an independent game outcome drawn from the node’s WDL. Visits are not such samples, so it works as a heuristic confidence penalty. It is large when a move has few visits or a high-variance outcome distribution, and shrinks as evidence accumulates.</p>
+<h5 id="why-the-lcb-not-raw-q">Why the LCB, Not Raw Q<a class="headerlink" href="#why-the-lcb-not-raw-q" title="Permanent link">&para;</a></h5>
+<p>The weakness of filtering on raw Q is that a barely visited move can carry a Q that is little more than a single network evaluation. If that value looks good, the move survives the filter and gets sampled even though the search never confirmed it. The LCB penalises exactly this case. A move with one or two visits has a large σ/√N correction, so its q̃ sits well below its raw Q, and it has to be visited enough for its confidence interval to tighten before it can compete on value. The filter therefore trusts a move's evaluation in proportion to how well established it is. In early runs, this removed the low-visit sampling errors seen with the raw-Q version. It also combines naturally with the visit-count base weight: a low-visit move is suppressed twice, once by its small visit count and once by its wider LCB penalty.</p>
+<h5 id="behaviour-across-positions">Behaviour Across Positions<a class="headerlink" href="#behaviour-across-positions" title="Permanent link">&para;</a></h5>
+<p>Where one move is clearly best and well searched, it has q_drop = 0 and its weight equals its full visit count, while inferior moves have large q_drop values and are suppressed exponentially. Where several continuations are genuinely viable and well explored, their q̃ values are close, the differences in q_drop are small, and sampling stays diverse. In a forced position, such as a recapture, every alternative to the correct move has both a large raw q_drop and a wide confidence penalty. All of them are suppressed, and the forced move is played almost deterministically. T = 0.1 was set empirically as the point that balances these cases: small enough to suppress clearly inferior moves, large enough not to collapse to argmax among genuinely close ones.</p>
+<h4 id="temperature-cutoff">Temperature Cutoff<a class="headerlink" href="#temperature-cutoff" title="Permanent link">&para;</a></h4>
+<p>Temperature sampling applies only for the first 30 plies. After that, selection is deterministic. With sequential halving, as in self-play, the engine takes the two most-visited unproven moves and plays the one with the higher Gumbel score, which is the halving winner. With PUCT used at inference, it plays the most-visited move, with Q breaking ties. Early-game diversity matters for training data; later in the game, the network should play its best move. The cutoff was tuned during self-play so that most games began with reasonable openings, while some poor opening moves still appeared in the buffer as negative examples.</p>
+<h3 id="policy-and-value-targets">Policy and Value Targets<a class="headerlink" href="#policy-and-value-targets" title="Permanent link">&para;</a></h3>
+<p>Training targets are generated immediately after each search, before the move is played.</p>
+<h4 id="value-target">Value Target<a class="headerlink" href="#value-target" title="Permanent link">&para;</a></h4>
+<p>The value target is standard: the final game result (win, draw or loss) from the side to move's perspective, assigned to every position in the game once the result is known.</p>
+<p>Besides checkmate and the rule-based draws, a self-play game can end in three ways:</p>
+<ul>
+<li>
+<p><strong>Resignation.</strong> The side to move resigns when its best Q is below the resignation threshold (see Action Selection). The game counts as a loss for that side.</p>
+</li>
+<li>
+<p><strong>Draw adjudication.</strong> After move 40, if the root's draw probability is at least 0.9 for 6 consecutive plies, the game is declared a draw.</p>
+</li>
+<li>
+<p><strong>Ply cap.</strong> Any game reaching 400 plies is declared a draw.</p>
+</li>
+</ul>
+<p>Resignation and draw adjudication are each enabled in 90% of games and disabled in the other 10%. Those games are played out, so the buffer still contains positions from lost and drawn endgames played to their natural conclusion.</p>
+<h4 id="policy-target">Policy Target<a class="headerlink" href="#policy-target" title="Permanent link">&para;</a></h4>
+<p>The policy target is the improved policy from Gumbel MCTS. For every legal root move a, a logit is formed from the network's prior logit plus a σ-scaled completed Q value, and a softmax over these gives the target:</p>
+<div class="arithmatex">\[
+\pi'(a) = \operatorname{softmax}\big(\text{logit}(a) + \sigma(\text{completedQ}(a))\big)
+\]</div>
+<p>σ is a monotonically increasing scale that grows with the visit count of the most-visited move. Q is rescaled from [−1, 1] to [0, 1] before scaling. Because completed Q is defined for every move, visited or not, the target covers all legal moves. Unvisited moves still receive a value: they're assigned the baseline v_mix. Self-play uses zero contempt, so the targets carry no draw bias.</p>
+<h5 id="v_mix">v_mix<a class="headerlink" href="#v_mix" title="Permanent link">&para;</a></h5>
+<p>v_mix is the baseline value given to unvisited moves. It blends the node's raw network value with the visit-weighted average Q of its visited children:</p>
+<div class="arithmatex">\[
+v_{\text{mix}} = \frac{q_{\text{raw}} + \sum_i N_i\,Q_i}{1 + \sum_i N_i}
+\]</div>
+<p>With visit weighting, v_mix is essentially the node's own running search value, with proven and mover-has-draw children counted at their exact values rather than their backed-up averages. The Gumbel paper instead weights the visited children's Q by their prior probabilities. In early runs, prior weighting was less stable, especially in positions where the network's prior was inaccurate. Visit weighting gives more weight to what the search actually found.</p>
+<h5 id="k-shrinkage">K-Shrinkage<a class="headerlink" href="#k-shrinkage" title="Permanent link">&para;</a></h5>
+<p>The second change is to completed Q itself. The paper uses a step function: the empirical q̂(a) for any visited move, and v_mix for unvisited ones. Here, completed Q is instead shrunk towards v_mix according to visit count:</p>
+<div class="arithmatex">\[
+\text{completedQ}(a) = \frac{N(a)\,\hat{q}(a) + k\,v_{\text{mix}}}{N(a) + k}
+\]</div>
+<p>At zero visits this reduces to v_mix. As N(a) grows, q̂(a) increasingly dominates, and the estimate converges to the paper's. The constant k sets the confidence scale: the visit count at which a move's own value and the v_mix baseline are weighted equally. The paper's construction is a limiting case: as k → 0, visited moves take their full q̂(a), recovering the step function. For all runs, k = 2.</p>
+<h5 id="what-it-does">What It Does<a class="headerlink" href="#what-it-does" title="Permanent link">&para;</a></h5>
+<p>The completed-Q softmax is sensitive to the Q values of individual root children. A node with a single visit can carry a Q that is little more than one network evaluation, an estimate the search never corroborated. Under the original construction, such a node contributes its full Q to the target. If that value is a confident misevaluation, it shifts the target logit by the full amount, and the policy is taught to move probability towards a move the search didn't validate.</p>
+<p>Shrinkage limits this. A poorly explored move contributes only a fraction of its deviation from v_mix, so a noisy single-visit value produces a small shift rather than a full one. The intended effect is less noise in the policy target.</p>
+<p>It matters most in a specific and common situation: the search has explored the strong moves thoroughly and found them good, while some barely explored move carries a raw evaluation that looks better. Under the original construction, that under-explored move would pull target mass away from the moves the search actually validated. Under shrinkage it can't, because its low visit count keeps its completed Q close to v_mix. The cost is a slower response to genuinely strong moves discovered late. But a strong move, once its high Q raises its score, is promoted by the search and gathers further visits, at which point shrinkage no longer holds it back. Only moves the search never properly checked stay shrunk.</p>
+<h5 id="effect-on-the-policy-improvement-guarantee">Effect on the Policy-Improvement Guarantee<a class="headerlink" href="#effect-on-the-policy-improvement-guarantee" title="Permanent link">&para;</a></h5>
+<p>The paper's improvement result [2, Appendix C] relies on σ being monotonically increasing: adding an increasing function of each move's value to its logit can only raise the expected value under the resulting policy. That holds for whatever completed-Q values are supplied, so it continues to hold under shrinkage. What changes is which values the improvement is measured against.</p>
+<p>Shrinkage preserves each move's direction relative to the baseline:</p>
+<div class="arithmatex">\[
+\text{completedQ}(a) - v_{\text{mix}} = \frac{N(a)\,\big(\hat{q}(a) - v_{\text{mix}}\big)}{N(a) + k}
+\]</div>
+<p>A move the search found better than v_mix is still pushed up, and a worse one is still pushed down; only the size of the deviation shrinks. Shrinkage does not, however, preserve the ordering between moves with different visit counts. A lightly visited move with a high q̂ can rank below a well-visited move with a lower q̂. That is the intended effect, since moves are ranked by value weighted by evidence. It does mean the improvement guarantee holds against these evidence-weighted values, not against the raw search estimates the paper's construction uses. Since shrinkage pulls towards the same v_mix baseline the paper already uses (Appendix D), it introduces no new estimator; it changes how much each move's own estimate is trusted.</p>
+<h4 id="proven-outcomes-in-targets">Proven Outcomes in Targets<a class="headerlink" href="#proven-outcomes-in-targets" title="Permanent link">&para;</a></h4>
+<p>Proven outcomes are exact and bypass shrinkage. A proven win enters the completed-Q softmax at Q = +1, a proven loss at Q = −1, and a proven draw at Q = 0. Because σ is large relative to the spread of the logits, a proven loss at −1 is pushed tens of logits below the alternatives and receives effectively zero probability. A move flagged mover-has-draw also enters at Q = 0. That is a search heuristic rather than a proof, but it matches the value search itself assigns to the move.</p>
+<p>Passing these outcomes in as fixed Q values, rather than overriding the target directly, gives the network the exact value for proven moves while keeping the policy target a continuous distribution.</p>
+<h3 id="search-at-inference-time">Search at Inference Time<a class="headerlink" href="#search-at-inference-time" title="Permanent link">&para;</a></h3>
+<p>Sequential halving suits the low-budget setting Gumbel MCTS was designed for: a few hundred simulations per move, concentrated on the strongest candidates through explicit elimination. At self-play budgets, that is exactly what's wanted.</p>
+<p>In tournament play, the engine gets orders of magnitude more simulations per move, and the phase structure starts to work against it:</p>
+<ul>
+<li>
+<p><strong>Stranded visits.</strong> Once a candidate is eliminated, its subtree is frozen. All the visits it received in earlier phases are wasted, and at high budgets this can be a large share of the total.</p>
+</li>
+<li>
+<p><strong>No tree reuse.</strong> Sequential halving plans its whole budget from zero across a fixed candidate set. A subtree carried over from the previous move already has visits from a different schedule, and those don't fit into the new plan.</p>
+</li>
+<li>
+<p><strong>Budget forecasting.</strong> Halving needs the total budget before the search starts. In play, that has to be predicted from measured nodes per second and the time available, both of which vary. If the prediction is too low, the final phases are starved, which distorts move selection.</p>
+</li>
+</ul>
+<p>Four root strategies were compared for play:</p>
+<ul>
+<li>
+<p>Gumbel sequential halving</p>
+</li>
+<li>
+<p>pure deficit-based selection from the root</p>
+</li>
+<li>
+<p>PUCT</p>
+</li>
+<li>
+<p>a hybrid with sequential halving at the root and PUCT below</p>
+</li>
+</ul>
+<p>PUCT was the strongest. This is consistent with the reasoning for using Gumbel in self-play: PUCT's weakness is at low simulation counts, and at tournament budgets that weakness no longer applies.</p>
+<p>At inference time, the engine therefore uses PUCT throughout the tree, with the network's policy passed through a softmax at temperature 1.4 before it is used as the prior. Proven-outcome handling and mover-has-draw are unchanged. The final move is the most-visited root move, with Q breaking ties. Because PUCT has no fixed budget schedule, the tree from the previous move is reused: the subtree under the move actually played becomes the new root.</p>
+<h3 id="training">Training<a class="headerlink" href="#training" title="Permanent link">&para;</a></h3>
+<h4 id="loss-and-optimiser">Loss and Optimiser<a class="headerlink" href="#loss-and-optimiser" title="Permanent link">&para;</a></h4>
+<p>The network is trained on two losses with equal weight:</p>
+<ul>
+<li>
+<p><strong>Policy loss:</strong> KL divergence between the network's policy and the improved-policy target π′, over legal moves</p>
+</li>
+<li>
+<p><strong>Value loss:</strong> cross-entropy between the network's WDL output and the game result.</p>
+</li>
+</ul>
+<p>Optimisation uses SGD with momentum 0.9 and L2 weight decay of 1e-4 (excluding batchnorm layers), following AlphaZero and Leela. There is no data augmentation. Castling rules break chess's left-right symmetry, so boards can't be mirrored the way Go boards can.</p>
+<p>The learning rate follows a fixed step schedule:</p>
+<ul>
+<li>
+<p>a linear warmup from 0.002 to 0.2 over the first 1,000 steps</p>
+</li>
+<li>
+<p>0.2 from 1,001 to 30,000 steps</p>
+</li>
+<li>
+<p>0.02 from 30,001 to 60,000 steps</p>
+</li>
+<li>
+<p>0.002 for the remainder of the run</p>
+</li>
+</ul>
+<p>Training runs on the same GPU as self-play inference, so the two share the device throughout.</p>
+<h4 id="replay-buffer">Replay Buffer<a class="headerlink" href="#replay-buffer" title="Permanent link">&para;</a></h4>
+<p>Positions are sampled uniformly at random from the LMDB replay buffer, in batches of 4,096. Every position in the buffer is equally likely to be chosen, however old it is.</p>
+<p>Training starts once the buffer holds 2 million positions. The buffer's capacity then grows linearly to 40 million positions, roughly 500,000 games, over the first 40,000 training steps, and stays there. A small buffer early on lets training cycle quickly through the low-quality games of the first phase, when the network is improving fastest. The large buffer later keeps a wide, diverse window of games as training stabilises. Any given batch draws on a long stretch of training history, covering a range of the network's playing strength.</p>
+<h4 id="sampling-ratio">Sampling Ratio<a class="headerlink" href="#sampling-ratio" title="Permanent link">&para;</a></h4>
+<p>The sampling ratio of 1.0 (one gradient step per 4,096 new positions) is enforced mechanically. The IO Writer flushes positions to LMDB in batches of exactly 4,096, matching the training batch size, and updates the buffer metadata after each flush. The trainer polls this metadata and takes its next step only once 4,096 new positions have been written since its last one. The ratio of positions generated to gradient updates is therefore exactly 1:1.</p>
+<h4 id="data-loading">Data Loading<a class="headerlink" href="#data-loading" title="Permanent link">&para;</a></h4>
+<p>Eight prefetch workers on dedicated CPU cores read positions from LMDB in the background, decode them, and assemble batches ahead of time. Batches are handed to the trainer through shared memory, so reading from the buffer runs in parallel with gradient steps.</p>
+<h2 id="evaluation">Evaluation<a class="headerlink" href="#evaluation" title="Permanent link">&para;</a></h2>
+<p>All results for this section pertain to the 10x128 net, labeled as Talbot v1.0</p>
+<h3 id="elo-methodology">Elo Methodology<a class="headerlink" href="#elo-methodology" title="Permanent link">&para;</a></h3>
+<p>External strength was measured with a 1,000-game gauntlet against ten engines with published CCRL Blitz ratings [8], from 2919 to 3386 (as at 16 November 2026). Each opponent played 100 games, made up of 50 openings drawn from Stockfish's 8moves_v3.pgn [11] with a random seed per opponent, each played once with each colour. Games used the CCRL Blitz time control of 2 minutes plus 1 second, scaled to this CPU with the Stockfish 10 benchmark, giving 65.3 s + 0.54 s. Opponents ran single-threaded, with one full core allocation, and 128 MB hash. Talbot and opponents both had access to 3–5 piece Syzygy tablebases in search.</p>
+<p>Games were run with fastchess [10] on the same 5950X used for training, two at a time, with each engine pinned to fixed logical cores. Each Talbot instance searches on one logical core and uses its inference subsystem, three Inference Batcher threads on the same CCD plus the shared RTX 5060 Ti, for network evaluation. Each opponent is pinned to both logical threads of one physical core, so its single thread has a full core to itself, as CCRL assumes. Cores 0–7 are left for the operating system.</p>
+<p>The purpose of this setup is to treat the inference subsystem as a hardware extension, giving Talbot one core for the tree search. Talbot searches with GPU evaluation, while the anchor engines run on a single CPU thread. The time-control scaling corrects only for CPU speed, not for the GPU. The result is therefore an estimate anchored to the CCRL Blitz scale under this hardware and time control, not an official CCRL rating, and it would differ on other hardware. Talbot searched at roughly 30–40k nodes per second during the gauntlet.</p>
+<p>During the gauntlet, Talbot uses a policy temperature softmax of 1.4, a cpuct of 3.0, and a draw cutoff of 0.2. These were tuned by sweeping each parameter with the final checkpoint in matches against itself, so no gauntlet opponent was used in tuning. The draw cutoff was chosen because Talbot converts winning endgames less reliably than its middlegame strength suggests, so accepting a draw in a slightly favourable position scored better than playing on.</p>
+<p>Ratings were fitted with Ordo [9], with each opponent's CCRL Blitz rating held fixed as an anchor. The 95% confidence interval was estimated by Ordo.</p>
+<h3 id="external-benchmark">External Benchmark<a class="headerlink" href="#external-benchmark" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Opponent</th>
+<th style="text-align: right;">CCRL</th>
+<th style="text-align: right;">W</th>
+<th style="text-align: right;">D</th>
+<th style="text-align: right;">L</th>
+<th style="text-align: right;">Score</th>
+<th style="text-align: right;">Expected</th>
+<th style="text-align: right;">Diff</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scarlet 2.0</td>
+<td style="text-align: right;">3386</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">47.5/100</td>
+<td style="text-align: right;">31%</td>
+<td style="text-align: right;">+17</td>
+</tr>
+<tr>
+<td>Dual 0.4.3</td>
+<td style="text-align: right;">3334</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">46/100</td>
+<td style="text-align: right;">38%</td>
+<td style="text-align: right;">+8</td>
+</tr>
+<tr>
+<td>Gilipol 2.00</td>
+<td style="text-align: right;">3254</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">48/100</td>
+<td style="text-align: right;">49%</td>
+<td style="text-align: right;">−1</td>
+</tr>
+<tr>
+<td>Svart 6</td>
+<td style="text-align: right;">3254</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">47/100</td>
+<td style="text-align: right;">49%</td>
+<td style="text-align: right;">−2</td>
+</tr>
+<tr>
+<td>Casanchess 2.0</td>
+<td style="text-align: right;">3192</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">52.5/100</td>
+<td style="text-align: right;">58%</td>
+<td style="text-align: right;">−5</td>
+</tr>
+<tr>
+<td>Pingu 5.0.0</td>
+<td style="text-align: right;">3180</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">62/100</td>
+<td style="text-align: right;">59%</td>
+<td style="text-align: right;">+3</td>
+</tr>
+<tr>
+<td>Vault 0.4.1</td>
+<td style="text-align: right;">3100</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">62/100</td>
+<td style="text-align: right;">70%</td>
+<td style="text-align: right;">−8</td>
+</tr>
+<tr>
+<td>tomitank 7.0</td>
+<td style="text-align: right;">3045</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">72/100</td>
+<td style="text-align: right;">76%</td>
+<td style="text-align: right;">−4</td>
+</tr>
+<tr>
+<td>Sentinel 2.0</td>
+<td style="text-align: right;">2983</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">79/100</td>
+<td style="text-align: right;">82%</td>
+<td style="text-align: right;">−3</td>
+</tr>
+<tr>
+<td>zurichess Neuchatel</td>
+<td style="text-align: right;">2919</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">79/100</td>
+<td style="text-align: right;">87%</td>
+<td style="text-align: right;">−8</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"><strong>347</strong></td>
+<td style="text-align: right;"><strong>496</strong></td>
+<td style="text-align: right;"><strong>157</strong></td>
+<td style="text-align: right;"><strong>595/1000</strong></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 1. Gauntlet results against ten CCRL Blitz-rated engines (100 games each).</em></p>
+<p>Talbot v1.0 scored 595/1000 (+347 =496 −157), for an anchored rating of 3246 ± 14 Elo (Ordo, 95% CI). This interval treats the anchors' CCRL ratings as exact and assumes one rating fits every opponent, so the true uncertainty is likely substantially larger. Per-opponent results are flatter than a single rating predicts. Talbot v1.0 over-performed against the two strongest engines (Scarlet +17 and Dual +8 points over expectation), matched expectation against engines near its own level (Gilipol −1, Svart −2), and under-performed slightly against weaker ones (as low as −8 against Vault and zurichess). This is consistent with its high draw rate, with 49.6% of games drawn. During evaluation, Talbot v1.0 was configured to play for a draw in slightly favourable positions. Because Talbot ran on a GPU while the anchors are CPU engines, this is a CCRL-anchored estimate under this hardware and time control, not an official CCRL rating.</p>
+<p>All 1,000 gauntlet games are available as PGNs in the v1.0.0 GitHub release.</p>
+<h3 id="lichess">Lichess<a class="headerlink" href="#lichess" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Time control</th>
+<th style="text-align: right;">Rating</th>
+<th style="text-align: right;">Games</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bullet</td>
+<td style="text-align: right;">2593</td>
+<td style="text-align: right;">16</td>
+</tr>
+<tr>
+<td>Blitz</td>
+<td style="text-align: right;">2564</td>
+<td style="text-align: right;">113</td>
+</tr>
+<tr>
+<td>Rapid</td>
+<td style="text-align: right;">2513</td>
+<td style="text-align: right;">360</td>
+</tr>
+<tr>
+<td>Classical</td>
+<td style="text-align: right;">2664</td>
+<td style="text-align: right;">77</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 2. Talbot's Lichess bot ratings as of 26 November 2026.</em></p>
+<p>Talbot also plays as a bot on Lichess (Talbotbot), where anyone can challenge it. On Lichess it runs without the core restrictions used in the gauntlet and can play several games at once. These ratings come from the Lichess bot pool, which differs from CCRL in its opponents, hardware and time controls, so the two scales are not comparable. Lichess bot ratings are also compressed near the top, with the strongest CCRL engines plateauing at around 3000. Talbot plays without an opening book and samples its opening moves for variety and more interesting games. It does use endgame tablebases.</p>
+<h3 id="internal-progression">Internal Progression<a class="headerlink" href="#internal-progression" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="../img/media/fig05_training_progression.png" /></p>
+<p><em>Figure 5. Training progression: round-robin Elo of checkpoints every 10k steps, anchored to the final CCRL Blitz estimate.</em></p>
+<p>Figure 5 shows Talbot's training progression from a round robin of checkpoints every 10k steps, plus the final net without search, at 200 games per pairing and 1,000 simulations per move. The final checkpoint is anchored to its CCRL Blitz estimate of 3246. Step 0, the untrained net, appears at about 1740, but that figure is unreliable. With no checkpoints between 0 and 10k, it scored only 2% against much stronger nets, too few points to measure a gap that large. Most of the gain comes by step 40k, and from 70k the curve flattens to within about 50 Elo. Without search, the final net rates about 1,090 Elo lower, similar to step 10k with search. Only the step-100k anchor corresponds to an external rating, since self-play gaps typically overstate differences against other engines.</p>
+<h3 id="training-metrics">Training Metrics<a class="headerlink" href="#training-metrics" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="../img/media/fig06_training_metrics.png" /></p>
+<p><em>Figure 6. Training metrics: losses, policy/target entropy, gradient norm and WDL prediction error. Dotted lines mark learning-rate drops at 30k and 60k steps.</em></p>
+<p>Figure 6 shows four core training metrics, with the two learning rate drops shown as dotted lines at 30k and 60k steps.</p>
+<ul>
+<li>
+<p>Top left: the value, policy and total loss. At step 0, the untrained net produces largely uniform policy targets, as the untrained value head predicts equal positions. These uniform targets are easy to predict. In each run, after the second rebuild at 1000 steps, the value head begins predicting non-uniform outputs, leading to non-uniform policy targets. Because of these dynamics, it was characteristic for every run that the policy loss would begin low (~0.05), rise to a peak, and begin to decay. The value loss consistently began low, and rose over the course of training. This rise was related to the draw rate during self-play. As the value predicts a categorical WDL output, a rising draw rate - a rough indication of increasing self-play game quality - becomes more challenging to predict.</p>
+</li>
+<li>
+<p>Top right: the policy and target entropy: entropy measures how spread out a move distribution is, with <span class="arithmatex">\(e^H\)</span> giving a rough idea of how many moves it is effectively choosing between. The policy entropy is the spread of the net's own move probabilities (from the raw policy), and the target entropy is the spread of the improved policy produced by search, which the net is trained towards. Both began near 2.8–3.0 nats, close to uniform over the ~30 legal moves in a typical position, and fell over the course of training. By step 100k the policy entropy settled at ~1.07 nats (roughly three effective moves) and the target at ~0.43 (roughly one and a half). The target was always sharper than the policy, as search concentrates probability on the moves it confirms - the gap between the two is a rough indication of how much search adds beyond the prior. Most of the drop happened in the first 20k steps, with a further drop after the first learning rate reduction. The policy never fully matched the target, partly because individual targets carry search noise and the net averages over many similar positions.</p>
+</li>
+<li>
+<p>Bottom left: gradient norm: the gradient norm held steady at ~0.55 until the first learning rate drop, then rose steadily to ~1.4. This is expected, and was seen across all runs, as each convolution is followed by batch normalisation, so the network is insensitive to the scale of the convolution weights, and weight decay keeps shrinking them. At a lower learning rate the weights settle at a smaller norm, and the gradient grows in proportion. The losses stayed stable throughout.</p>
+</li>
+<li>
+<p>Bottom right: WDL prediction error: this is the gap between the average predicted and average target win, draw and loss percentages in each batch - a measure of how well calibrated the value head is on average, rather than its accuracy on individual positions. The error dropped below one percentage point within the first 20k steps and stepped down at each learning rate drop, finishing at ~0.6 points for wins and losses and ~0.5 for draws.</p>
+</li>
+</ul>
+<p><img alt="" src="../img/media/fig07_selfplay_properties.png" /></p>
+<p><em>Figure 7. Self-play game properties: castling rates, most common first ply, game results and mean game length.</em></p>
+<p>Figure 7 shows properties of the self-play games generated over the course of training.</p>
+<ul>
+<li>
+<p>Top left and right: the proportion of games showing kingside, queenside and no castling, for white (top left) and black (top right). Castling is a non-trivial feature for a network to learn, as it requires moving at least a knight and bishop, and an understanding that moving the king away from the centre, or bringing a rook towards the centre, is beneficial. Castling is learned for both white and black around 10k steps, and by the end of training white castles slightly more than black, with ~82% of games as white and ~78% of games as black featuring a castling move.</p>
+</li>
+<li>
+<p>Middle left and right: the most common first ply for both white and black. At the beginning of training, the final result of a game is poorly correlated with a specific opening move, as the quality of the game is low and blunders decide the final result. At ~10k steps, the self-play games become high quality enough for the opening moves to matter, and the network begins preferring traditional opening moves - e4 and d4 for white - and a range of various responses for black (notably excluding e5). Both white and black moves saturate above 95% - the other 5% provide negative examples, ensuring it does not overfit to specific openings.</p>
+</li>
+<li>
+<p>Bottom: the game results (left) and mean game length (right). At the beginning of training, the draw rate is high as the network largely has to stumble into a checkmate, and many games end due to reaching the max ply limit (400). Additionally, an MHD specific quirk of an untrained value head results in many early three-fold repetitions (value noise pushes a result above or below the draw threshold of 0.0). By 10k steps, the games become more decisive resulting in a low draw rate (and lower mean game length seen in the bottom right panel). For the remainder of training, the draw rate slowly grows, and mean game length stabilises around 82 plies. The draw rate was a good proxy for network strength across runs with the same settings, as typically, a high draw rate is indicative of higher quality self-play.</p>
+</li>
+</ul>
+<h3 id="system-results">System Results<a class="headerlink" href="#system-results" title="Permanent link">&para;</a></h3>
+<h4 id="comparison-across-runs">Comparison across runs<a class="headerlink" href="#comparison-across-runs" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Network Architecture</th>
+<th style="text-align: right;">Parameter Count</th>
+<th style="text-align: right;">Training time (hours)</th>
+<th style="text-align: right;">Nodes per second</th>
+<th style="text-align: right;">Games per second</th>
+<th style="text-align: right;">CPU usage (%)</th>
+<th style="text-align: right;">Avg GPU power (W)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6x64</td>
+<td style="text-align: right;">889,676</td>
+<td style="text-align: right;">44.3</td>
+<td style="text-align: right;">331,383</td>
+<td style="text-align: right;">29.6</td>
+<td style="text-align: right;">24.8</td>
+<td style="text-align: right;">139.7</td>
+</tr>
+<tr>
+<td>10x128</td>
+<td style="text-align: right;">3,830,028</td>
+<td style="text-align: right;">95.8</td>
+<td style="text-align: right;">152,719</td>
+<td style="text-align: right;">14.0</td>
+<td style="text-align: right;">17.3</td>
+<td style="text-align: right;">178.0</td>
+</tr>
+<tr>
+<td>15x192</td>
+<td style="text-align: right;">11,720,876</td>
+<td style="text-align: right;">256.7</td>
+<td style="text-align: right;">57,021</td>
+<td style="text-align: right;">5.4</td>
+<td style="text-align: right;">14.8</td>
+<td style="text-align: right;">177.9</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 3. Comparison of three network sizes trained with the same pipeline and settings.</em></p>
+<p>Table 3 compares three network sizes trained with the same pipeline and settings. Only the 10x128 net is released as Talbot v1.0. The 6x64 and 15x192 nets are unreleased and are included to show how the system performs at different sizes. Each run generated the same total amount of self-play search, so training time scaled inversely with nodes (network evaluations) per second, and network size affected training time only through inference throughput. The 10x128 and 15x192 runs were clearly GPU-saturated, averaging ~178 W against the card's ~180 W power limit at ~99% utilisation. The 6x64 run averaged only 139.7 W, so with a net that small the bottleneck moved elsewhere in the pipeline.</p>
+<p>The 6x64 finished ~305 Elo below the 10x128 run. The 15x192 also finished below it, by ~61 Elo, despite three times the parameters, and showed similar self-play and training diagnostics. The most likely cause is INT8 self-play: at equal nodes, INT8 costs the 15x192 about 89 Elo, against about 19 for the 10x128 (see Ablations: INT8 inference), so its training targets came from a noticeably weaker search than the network could support. This hasn't been tested directly.</p>
+<h2 id="ablations">Ablations<a class="headerlink" href="#ablations" title="Permanent link">&para;</a></h2>
+<h3 id="action-selection_1">Action selection<a class="headerlink" href="#action-selection_1" title="Permanent link">&para;</a></h3>
+<p>The action selection mechanism (LCB-filtered visit sampling) was chosen based on observations from early runs. To test it directly, I trained three 6x64 networks for 40k steps each. The runs were identical apart from how moves were selected in the first 30 plies of self-play:</p>
+<ul>
+<li><strong>Argmax:</strong> no sampling. Every move is the sequential halving winner, so the only randomness comes from the root Gumbel noise. This is the most natural reading of the Gumbel paper.</li>
+<li><strong>Visits:</strong> moves sampled in proportion to visit count, with no Q filter.</li>
+<li><strong>LCB:</strong> the method used for Talbot v1.0, sampling by visit count with exponential suppression by LCB value (T = 0.1).</li>
+</ul>
+<h4 id="opening-diversity">Opening diversity<a class="headerlink" href="#opening-diversity" title="Permanent link">&para;</a></h4>
+<p>Diversity was measured on the self-play games generated between steps 39k and 40k of each run. Positions are compared rather than move sequences, so transpositions count as the same opening.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">Argmax</th>
+<th style="text-align: right;">Visits</th>
+<th style="text-align: right;">LCB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Games</td>
+<td style="text-align: right;">44,682</td>
+<td style="text-align: right;">75,628</td>
+<td style="text-align: right;">48,054</td>
+</tr>
+<tr>
+<td>Most common first move</td>
+<td style="text-align: right;">1.d4 (86%)</td>
+<td style="text-align: right;">1.e4 (20%)</td>
+<td style="text-align: right;">1.e4 (50%)</td>
+</tr>
+<tr>
+<td>White first-move entropy (bits)</td>
+<td style="text-align: right;">0.69</td>
+<td style="text-align: right;">3.51</td>
+<td style="text-align: right;">1.89</td>
+</tr>
+<tr>
+<td>Black first-reply entropy (bits)</td>
+<td style="text-align: right;">1.69</td>
+<td style="text-align: right;">3.62</td>
+<td style="text-align: right;">2.52</td>
+</tr>
+<tr>
+<td>Most common position, ply 8</td>
+<td style="text-align: right;">21.7%</td>
+<td style="text-align: right;">&lt;0.1%</td>
+<td style="text-align: right;">2.4%</td>
+</tr>
+<tr>
+<td>Most common position, ply 20</td>
+<td style="text-align: right;">12.3%</td>
+<td style="text-align: right;">&lt;0.1%</td>
+<td style="text-align: right;">&lt;0.1%</td>
+</tr>
+<tr>
+<td>Draw rate</td>
+<td style="text-align: right;">13.2%</td>
+<td style="text-align: right;">3.3%</td>
+<td style="text-align: right;">10.9%</td>
+</tr>
+<tr>
+<td>Mean game length (plies)</td>
+<td style="text-align: right;">91.6</td>
+<td style="text-align: right;">54.0</td>
+<td style="text-align: right;">84.9</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 4. Self-play diversity at step 39k for the three action selection methods (6x64).</em></p>
+<p>Argmax selection did not collapse to a single opening as in my early runs, but it concentrated the opening heavily. By step 39k, 86% of games began 1.d4, and 12.3% of all games reached the same position after ten moves, an Exchange Slav line. The distribution was also unstable: the dominant first move switched from 1.e4 (~70% at 25k steps) to 1.d4 (~70% at 35k steps) within about 10k steps. The root Gumbel noise is too weak to override a confident prior, so once the network prefers a line, it is replayed until its value estimates shift.</p>
+<p>Visit sampling failed in the other direction. Its openings were highly diverse, but much of that diversity came from weak moves: 1.d3, 1.e3 and 1.Nc3 were among White's most common first moves, and lines featuring early ...a6, ...b5 and ...h6 were common. Games were 36% shorter, the draw rate fell to 3.3%, and 14% of games ended before ply 20. This is the failure described in Methods: sequential halving gives the final candidates similar visit counts regardless of their quality, so blunders are sampled almost as often as good moves.</p>
+<p>LCB sampling was diverse without being noisy. White played a mix of 1.e4, 1.d4 and 1.Nf3, Black replied with a range of standard defences, and almost no two games shared a position after ten moves.</p>
+<h4 id="strength">Strength<a class="headerlink" href="#strength" title="Permanent link">&para;</a></h4>
+<p>The three 40k checkpoints played a round robin at 1,000 simulations per move, with 1,000 games per pairing and each opening played with both colours. It was run twice, from 8-ply and from 16-ply book openings. Ratings were fitted with Ordo, with LCB as the anchor.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">8-ply openings</th>
+<th style="text-align: right;">16-ply openings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LCB</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>Argmax</td>
+<td style="text-align: right;">−56 ± 16</td>
+<td style="text-align: right;">−47 ± 16</td>
+</tr>
+<tr>
+<td>Visits</td>
+<td style="text-align: right;">−114 ± 17</td>
+<td style="text-align: right;">−76 ± 17</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 5. Round-robin Elo of the three 40k checkpoints, relative to LCB (Ordo, 95% CI).</em></p>
+<p>LCB was strongest at both opening depths. Its advantage over argmax was ~50 Elo and did not depend on opening depth: even 8-ply openings mostly start outside the argmax network's preferred lines. Visit sampling was weakest, but its deficit fell from 114 to 76 Elo with deeper openings. That is consistent with its main weakness being the opening itself, where its training data was poorest, which deeper book positions partly bypass.</p>
+<p>These ablations have some limitations. Each method was trained once, with a single seed, so run-to-run variance is unknown, and smaller differences, such as between argmax and LCB, may partly reflect it. All three runs used the 6x64 network and stopped at 40k steps, well short of a full training run, so it is untested whether the gaps grow, shrink or persist with longer training or a larger network. Strength was measured only against the other ablation networks, not against external engines.</p>
+<h3 id="int8-inference">INT8 inference<a class="headerlink" href="#int8-inference" title="Permanent link">&para;</a></h3>
+<p>Self-play used INT8 TensorRT engines. The residual stack was quantised with post-training static quantisation (per-channel symmetric weights, MinMax calibration on replay-buffer positions).</p>
+<h4 id="speed">Speed<a class="headerlink" href="#speed" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Network</th>
+<th style="text-align: right;">Batch</th>
+<th style="text-align: right;">INT8 (pos/s)</th>
+<th style="text-align: right;">FP16 (pos/s)</th>
+<th style="text-align: right;">INT8 vs FP16</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6x64</td>
+<td style="text-align: right;">128</td>
+<td style="text-align: right;">439,700</td>
+<td style="text-align: right;">520,700</td>
+<td style="text-align: right;">−16%</td>
+</tr>
+<tr>
+<td>6x64</td>
+<td style="text-align: right;">256</td>
+<td style="text-align: right;">520,500</td>
+<td style="text-align: right;">604,500</td>
+<td style="text-align: right;">−14%</td>
+</tr>
+<tr>
+<td>10x128</td>
+<td style="text-align: right;">128</td>
+<td style="text-align: right;">148,800</td>
+<td style="text-align: right;">149,700</td>
+<td style="text-align: right;">−1%</td>
+</tr>
+<tr>
+<td>10x128</td>
+<td style="text-align: right;">256</td>
+<td style="text-align: right;">160,400</td>
+<td style="text-align: right;">155,600</td>
+<td style="text-align: right;">+3%</td>
+</tr>
+<tr>
+<td>15x192</td>
+<td style="text-align: right;">128</td>
+<td style="text-align: right;">59,800</td>
+<td style="text-align: right;">49,000</td>
+<td style="text-align: right;">+22%</td>
+</tr>
+<tr>
+<td>15x192</td>
+<td style="text-align: right;">256</td>
+<td style="text-align: right;">64,000</td>
+<td style="text-align: right;">52,400</td>
+<td style="text-align: right;">+22%</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 6. INT8 and FP16 inference throughput on the RTX 5060 Ti, measured with trtexec (single stream, GPU compute only). The self-play pipeline runs three batches concurrently, so its sustained throughput can be slightly higher than these figures.</em></p>
+<p>INT8's benefit depends on network width. It's slower than FP16 at 6x64, about even at 10x128, and 22% faster at 15x192. INT8 speeds up the convolutions but adds a roughly fixed cost from quantise/dequantise steps and memory-bound layers (SE pooling and gating, residual adds). Only wider networks have convolutions large enough to outweigh that cost.</p>
+<p>The FP32 heads probably add to that overhead. In a per-layer profile of the 10x128 INT8 engine, <code>policy_conv2</code> and <code>value_fc1</code> were the two slowest layers, each taking about 5x as long as an INT8 residual convolution. Running them in FP16 might recover some of that time (not tested).</p>
+<h4 id="strength_1">Strength<a class="headerlink" href="#strength_1" title="Permanent link">&para;</a></h4>
+<p>Each network's INT8 engine played its FP16 engine from the same checkpoint: 1,000 games at 1,000 simulations per move from 8moves_v3 openings. Both sides search the same number of nodes, so this measures accuracy loss only, not speed. Elo from Ordo; intervals computed from the W/D/L counts.</p>
+<table>
+<thead>
+<tr>
+<th>Network</th>
+<th>FP16 W / D / L</th>
+<th style="text-align: right;">FP16 score</th>
+<th style="text-align: right;">Elo (FP16 − INT8)</th>
+<th>95% CI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10x128</td>
+<td>381 / 291 / 328</td>
+<td style="text-align: right;">52.7%</td>
+<td style="text-align: right;">+18.8</td>
+<td>0 to +37</td>
+</tr>
+<tr>
+<td>15x192</td>
+<td>498 / 251 / 251</td>
+<td style="text-align: right;">62.4%</td>
+<td style="text-align: right;">+88.9</td>
+<td>+69 to +107</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 7. INT8 vs FP16 at equal nodes: 1,000 games at 1,000 simulations per move (Ordo; 95% CI from W/D/L counts).</em></p>
+<ul>
+<li><strong>10x128:</strong> INT8 costs about 19 Elo, which is only just significant.</li>
+<li><strong>15x192:</strong> INT8 costs about 89 Elo, nearly five times as much.</li>
+</ul>
+<p>The 15x192 self-play data was generated with the INT8 engine. Whether that hurt the trained network's strength hasn't been tested, but seems plausible. Because INT8 costs the 15x192 network more than the 10x128, the two were also compared with both in FP16: 200 games at 1,000 simulations per move. The 10x128 still won, +95 =47 −58 (59.2%, about +65 Elo, 95% CI roughly +20 to +110), so INT8 inference alone does not explain the gap.</p>
+<h4 id="which-precision-each-result-used">Which precision each result used<a class="headerlink" href="#which-precision-each-result-used" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>CCRL gauntlet:</strong> INT8 10x128. At equal nodes, the FP16 version of the same network is about 19 Elo stronger. The gauntlet hasn't been rerun with FP16.</li>
+<li><strong>Internal evaluation matches</strong> (training progression, action selection ablation): INT8.</li>
+</ul>
+<h2 id="discussion">Discussion<a class="headerlink" href="#discussion" title="Permanent link">&para;</a></h2>
+<h3 id="self-play-analysis">Self-play Analysis<a class="headerlink" href="#self-play-analysis" title="Permanent link">&para;</a></h3>
+<p>The main cost of a 128-simulation search combined with deficit-based non-root selection is occasional tactical oversights in self-play. Sequential halving forces breadth only at the root, and further down the tree, visits follow the prior. With the combination of n=128 and m=16, principal variation moves receive only 30 visits each. Due to this limited visit count, and the deficit-based non-root selection, visit allocation closely follows the prior below the root. When a refutation has a low prior from the opponent's side, the opponent's search gives it too few visits to find. The following examples are taken from Talbot self-play games:</p>
+<h4 id="example-1-pins">Example 1: Pins<a class="headerlink" href="#example-1-pins" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;"><img alt="" src="../img/media/fig08a_pin_before.png" /></th>
+<th style="text-align: center;"><img alt="" src="../img/media/fig08b_pin_after.png" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">(a) Before: Black to move, position equal.</td>
+<td style="text-align: center;">(b) After the blunder ...Rxd4??: White to move, +6.0.</td>
+</tr>
+</tbody>
+</table>
+<p><em>Figure 8. Example 1 (pin). Black self-pins the rook with ...Rxd4??. The winning replies Rd3 and Rd1 have a combined prior of ~0.12%.</em></p>
+<p>White plays Rcg1, and the position is, according to Stockfish, equal. Black plays Rxd4??, self-pinning the rook, and giving white a +6.0 advantage. White follows up with Rd3, attacking the pinned piece. Black can only temporarily defend this, as white attacks the pinned piece with both rooks, and black resigns.</p>
+<p>After the Rxd4?? blunder, the network evaluates the position as +0.55 pawns from Black's perspective, however, its principal variation follows the line: Rxd4 Rg8 Ke7 Bxd4 Rxd4, completely missing white's best response to attack the pinned rook. The reason becomes clear when analysing the following position after the Rxd4 capture, from White's perspective. Both Rd1 and Rd3, which are winning moves, receive a combined prior probability of ~0.12%.</p>
+<p>White's search only finds it because Gumbel noise lifts one of these moves into the 16 candidates. Once the net searches even a small amount, it realises the position is winning, overcoming the very low initial prior. However, because of this low prior, it was not explored by black at all when searching at Rxd4. In this position, by prior, Rd3 ranked 17th, and Rd1 ranked 22nd, out of 31 legal moves. In the game, Rd3 was played, as it was boosted into the top 16 by gumbel noise.</p>
+<p>These tactical misses are a known weakness of policy networks. The network gives a very low prior to White moving a rook to a square where it appears it can be captured. Seeing why that's safe requires combining several pieces at once: the white rook looks undefended, but it can't be taken because the white bishop pins the black rook to the black king. The network can see the whole board, so the difficulty isn't range. More likely, positions like this are rare in self-play, and because the search rarely finds the refutation, the network is rarely corrected. Patterns like pins and discovered attacks therefore depend on search to be found.</p>
+<p>This particular example does not benefit from a larger search budget, as increasing the search budget eightfold, to 1,024 simulations, did not change Black's choice. Below the root, moves that haven't been visited all look equally good to the search, so it tries them in order of prior. With a prior of just 0.087%, Rd3 sat near the bottom of that order, and Black's search never reached it. Instead, it requires greater exploration at non-root nodes, at the cost of a shallower search at a fixed budget. I did briefly explore adding an exploration term to non-root node selection, however, at 128 simulations, this produced worse game quality than pure deficit based selection.</p>
+<p>Because White's search rates a very low-prior move as winning, it will produce a very strong training signal - up to 7.0 nats, or roughly 10 times the average converged policy loss. Ideally these tactical blunders provide enough learning signal for the network to learn to assign higher priors to these types of moves, but I found that did not happen consistently, and tactical blind spots were still relatively common. Additionally, Black's search rated Rxd4 highly, so Black's policy target for that position pushes towards Rxd4. The pre-blunder position reinforces the error while the post-blunder position corrects it. That helps explain why these blind spots persist.</p>
+<h4 id="example-2-discovered-attack">Example 2: Discovered attack<a class="headerlink" href="#example-2-discovered-attack" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;"><img alt="" src="../img/media/fig09a_discovered_before.png" /></th>
+<th style="text-align: center;"><img alt="" src="../img/media/fig09b_discovered_missed.png" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">(a) Before: White to move (+5.6).</td>
+<td style="text-align: center;">(b) The missed move: Bd7+, a discovered attack on the rook on h4.</td>
+</tr>
+</tbody>
+</table>
+<p><em>Figure 9. Example 2 (discovered attack). White misses Bd7+, which had a prior of ~0.029% (23rd of 28 moves), outside the m = 16 candidates.</em></p>
+<p>This second example from a self-play game highlights another limitation with the search, that is, when the best move is not present in the initial m=16 candidate selection. In this position, white has a clear best move - Bd7+, checking the black king, and revealing a discovered attack on the black rook on h4. Stockfish gives this position as +5.6.</p>
+<p>In the game, white played Bg2, giving a +1.16 advantage to white. Bd7+ got about 0.029% of the prior, 23rd of 28 legal moves, with a logit of −4.40. It was not allocated visits because it was outside the top 16 moves for sequential halving. With m=32 and n=128, the network does correctly find Bd7+. This is another tactic with a complex piece interaction (king, bishop and both rooks). However, the difference between this and the previous example is that the network does not receive any learning signal.</p>
+<p>This failure illustrates an interesting trade off in sequential halving - breadth vs depth at a fixed budget. With m=16, occasionally moves like this will be missed. The network can generalize from other similar positions, and noise can occasionally bump low prior moves into the selection pool, but that process is slower than if those positions are discovered directly through search. The trade off is that at m=32 n=128, the principal variations are not searched as deeply. It is not clear which approach is best. I tested m=8 and found the network never learned queenside castling. Near the beginning of a run, Queenside castling is given a low prior from the network. At m=8, it was not sampled enough, and as the priors sharpened, noise could not overcome the gap, and it was never learned.</p>
+<h3 id="comparison-with-existing-work">Comparison with existing work<a class="headerlink" href="#comparison-with-existing-work" title="Permanent link">&para;</a></h3>
+<p>This section compares Talbot v1.0's training cost against other AlphaZero-style projects. The reference point is the final estimate of 3246 Elo on the CCRL Blitz scale (Talbot on an RTX 5060 Ti; opponents on a single CPU core), reached after 95.8 hours of training across ~4.8M self-play games. That corresponds to ~4.8M games × ~80 plies × 128 simulations ≈ 4.9×10¹⁰ network evaluations, × ~0.38 GOPs per 10×128 forward pass ≈ 2×10¹⁹ operations. Each project measures strength differently, against different opponents, hardware and time controls, so this is a slightly crude attempt to compare efficiency across hardware, network sizes and final strength.</p>
+<table>
+<thead>
+<tr>
+<th>Project</th>
+<th>Hardware</th>
+<th>Training time</th>
+<th>Self-play games</th>
+<th>Sims/move</th>
+<th>Estimate self-play operations</th>
+<th>Strength</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Talbot v1.0</td>
+<td>1xRTX 5060 Ti</td>
+<td>95.8 h</td>
+<td>~4.8M</td>
+<td>128</td>
+<td>~2x10^19</td>
+<td>3246 CCRL Blitz (anchored)</td>
+</tr>
+<tr>
+<td>AlphaZero</td>
+<td>5000x TPU v1</td>
+<td>9h</td>
+<td>~44M</td>
+<td>800</td>
+<td>~8x10^21</td>
+<td>52 Elo over SF8 (not CCRL scale)</td>
+</tr>
+<tr>
+<td>Leela test10 (net 11248)</td>
+<td>Distributed volunteer GPUs</td>
+<td>Months</td>
+<td>~50M</td>
+<td>800</td>
+<td>1x10^22</td>
+<td>3282 (scale unstated)</td>
+</tr>
+<tr>
+<td>Efficient Self-Play Chess (2026)</td>
+<td>8x RTX 4070 SUPER</td>
+<td>60hr</td>
+<td>~3.25M</td>
+<td>300-600 (PUCT)</td>
+<td>~8×10^19</td>
+<td>3251 (vs fixed-node Stockfish 13)</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 8. Training cost and strength of Talbot v1.0 compared with other AlphaZero-style projects.</em></p>
+<h4 id="alphazero">AlphaZero<a class="headerlink" href="#alphazero" title="Permanent link">&para;</a></h4>
+<p>AlphaZero's self-play compute is estimated from its published figures [1], assuming an average game length of 80 plies, as for every project in this comparison. Its 44 million self-play games then give about 3.5 × 10⁹ positions. At 800 simulations per move, that is about 2.8 × 10¹² network evaluations. Its 19-block, 256-filter network costs about 3.0 G operations per evaluation, so the total is roughly 8 × 10²¹ self-play operations. Training on 64 second-generation TPUs is excluded, as it adds only a few percent.</p>
+<h4 id="leela-chess-zero-test10">Leela Chess Zero (test10)<a class="headerlink" href="#leela-chess-zero-test10" title="Permanent link">&para;</a></h4>
+<p>Leela's test10 run trained a 20-block, 256-filter network on games generated by volunteers' GPUs. The run doesn't publish a total game count, but at 40,000 self-play games for each of about 1,260 networks [4], it generated roughly 50 million games. Assuming 80 plies per game, that's about 4.0 × 10⁹ positions. At 800 playouts per move, Leela's standard self-play setting at the time, this gives about 3.2 × 10¹² network evaluations. At about 3.0 G operations per evaluation, the total is roughly 10²² self-play operations, close to AlphaZero's, which used the same network size and simulation count. Its best network, 11248, is listed at 3282 [4], but the scale isn't stated.</p>
+<h4 id="engineering-efficient-self-play-chess-2026">Engineering Efficient Self-Play Chess (2026)<a class="headerlink" href="#engineering-efficient-self-play-chess-2026" title="Permanent link">&para;</a></h4>
+<p>This recent single-node run [3] trained a 14-block, 160-channel network on one machine with eight RTX 4070 SUPER GPUs over 2.5 days, using PUCT search. It reports approximately 100 billion search simulations. At roughly 0.79 G operations per evaluation for the final 14×160 network, this gives at most about 8 × 10¹⁹ self-play operations, around 3.5–4 times Talbot's.</p>
+<p>Additionally, this net trains from self-play without human games, but its inputs include derived features such as check flags and material counts, which AlphaZero-style inputs leave for the network to learn. Talbot does not include these.</p>
+<h4 id="other-engines">Other Engines<a class="headerlink" href="#other-engines" title="Permanent link">&para;</a></h4>
+<p>To my knowledge, Gumbel MCTS has not previously been demonstrated on chess at low simulation counts to a competitive strength. The original work [2] tested chess only at 400 simulations per move, where it matched AlphaZero's performance; its low-simulation experiments, from 2 to 200 simulations, were all on 9×9 Go. Talbot's self-play runs at 128 simulations per move, below anything tested on chess in that work. The main strong open engine, Leela Chess Zero, uses PUCT, as does the 2026 single-node run compared above.</p>
+<p>I found no comparable tabula rasa chess engine trained on a single GPU and evaluated against rated engines. Small-scale projects exist, but they typically report no strength figure, or one measured against unspecified opponents. The 2026 single-node run is the nearest published comparison, and it used eight GPUs.</p>
+<h4 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h4>
+<p>AlphaZero and Leela's test10 run each used roughly 10²² self-play operations. Both reached a much higher level, though, and on hardware and rating scales that make a direct comparison hard. They were also optimising for maximum strength, rather than efficiency. Talbot reaches a strong level with ~400x less self-play compute than the original systems.</p>
+<p>The closest comparison is the 2026 single-node run, which used about 3.5-4x the self-play operations. It reports 3251 against fixed-node Stockfish 13, a different scale from the CCRL Blitz estimate used here, so the two strengths are not directly comparable.</p>
+<h2 id="future-work">Future work<a class="headerlink" href="#future-work" title="Permanent link">&para;</a></h2>
+<p>Talbot v1.0 was an efficiency exercise. The next step is scaling: larger networks, longer runs and a deeper search.</p>
+<h3 id="training_1">Training<a class="headerlink" href="#training_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>Scaling up the network is an obvious choice. I have done preliminary testing with a 15x192 network trained to 100k steps, but this performed 61 Elo below the 10x128 net, which may be due to INT8 quantisation during training, as it had a noticeable detrimental impact during inference. I plan on disabling it and continuing training with FP16.</p>
+</li>
+<li>
+<p>The 15x192 run will continue with m = 32 and a larger simulation budget. Gains at this scale have been slow. A wider, deeper search should also address the blind spots shown in the worked examples and produce better training targets.</p>
+</li>
+<li>
+<p>Exploring KataGo-style [5] surprise weighting, which samples each training position in proportion to the KL divergence between the search's policy target and the network's prior. Positions where search found something the network missed, like the tactics in the worked examples, are trained on more often, so the network learns from its biggest mistakes faster, at no extra self-play cost.</p>
+</li>
+</ul>
+<h3 id="inference">Inference<a class="headerlink" href="#inference" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>At inference time, each game currently runs a single search thread, and the UCI search is CPU bottlenecked. Running several threads on one shared tree would make better use of the GPU, but requires careful implementation.</p>
+</li>
+<li>
+<p>Systematic tuning of the PUCT exploration constant, including making it grow with visit count so the search widens as it deepens, and of the value assigned to unvisited moves.</p>
+</li>
+</ul>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ol>
+<li>D. Silver et al. <em>A general reinforcement learning algorithm that masters chess, shogi, and Go through self-play.</em> Science 362(6419), 2018.</li>
+<li>I. Danihelka, A. Guez, J. Schrittwieser, D. Silver. <em>Policy improvement by planning with Gumbel.</em> ICLR 2022.</li>
+<li>B. Braun. <em>Engineering Efficient Self-Play Chess: Search, Replay, and Throughput Under Limited Compute.</em> arXiv:2609.37447, 2026. Code: <a href="https://github.com/BertilBraun/alphazero-chess">https://github.com/BertilBraun/alphazero-chess</a></li>
+<li>Leela Chess Zero. <em>Training runs</em> (test10). <a href="https://lczero.org/dev/wiki/training-runs/">https://lczero.org/dev/wiki/training-runs/</a></li>
+<li>D. J. Wu. <em>Accelerating Self-Play Learning in Go</em> (KataGo). arXiv:1902.10565, 2019.</li>
+<li>K. He, X. Zhang, S. Ren, J. Sun. <em>Deep Residual Learning for Image Recognition.</em> CVPR 2016.</li>
+<li>J. Hu, L. Shen, G. Sun. <em>Squeeze-and-Excitation Networks.</em> CVPR 2018.</li>
+<li>CCRL Blitz rating list. <a href="https://computerchess.org.uk/ccrl/404/">https://computerchess.org.uk/ccrl/404/</a></li>
+<li>Ordo rating tool. <a href="https://github.com/michiguel/Ordo">https://github.com/michiguel/Ordo</a></li>
+<li>fastchess. <a href="https://github.com/Disservin/fastchess">https://github.com/Disservin/fastchess</a></li>
+<li>Stockfish opening books (8moves_v3). <a href="https://github.com/official-stockfish/books">https://github.com/official-stockfish/books</a></li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "content.code.copy", "toc.follow"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
